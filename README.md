@@ -1,2 +1,3 @@
 # java-filmorate
-Template repository for Filmorate project.
+Учебный проект. 
+Созданиие прилощений на основе шаблона "Spring" 
