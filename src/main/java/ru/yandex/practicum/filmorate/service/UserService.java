@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 public class UserService {
 
-    static protected UserStorage users = Storages.getUerStorage();
+    protected static UserStorage users = Storages.getUerStorage();
 
     /**
      * Метод поиска всех пользователей
