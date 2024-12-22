@@ -51,11 +51,11 @@ public class InMemoryUserStorage extends InMemoryAbstractStorage<User> implement
 
     @Override
     public void breakUpFriends(Integer id1, Integer id2) {
-        if(getElement(id1) != null) {
+        if (getElement(id1) != null) {
             friends.get(id1).remove(id2);
         }
 
-        if(getElement(id2) != null) {
+        if (getElement(id2) != null) {
             friends.get(id2).remove(id1);
         }
     }
