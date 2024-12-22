@@ -1,22 +1,31 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
 
 /**
  * Класс обработки http запросов о пользователях.
  */
+@Slf4j
 @RestController
 @RequestMapping("/users")
-@Validated
-public class UserController extends AbstractController<User> {
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+public class UserController {
+
+    @Autowired
+    UserService service;
+
+    @Autowired
+    public UserController(UserService service) {
+        this.service = service;
+    }
 
     /**
      * Метод поиска всех пользователей
@@ -24,9 +33,48 @@ public class UserController extends AbstractController<User> {
      * @return - список пользователей
      */
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public Collection<User> findAllUser() {
-        log.info("Get all users {}.", super.findAll().size());
-        return super.findAll();
+        log.info("Запрашиваем список всех пользователей {}.", service.findAllUsers().size());
+        return service.findAllUsers();
+    }
+
+    /**
+     * Метод поиска пользователя по идентификатору
+     *
+     * @param id - идентификатор
+     * @return - найденный объект
+     */
+    @GetMapping("/{id}")
+    public User findUser(@PathVariable Integer id) {
+        log.info("Ищем пользователя id={}.", id);
+        return service.getUserById(id);
+    }
+
+    /**
+     * Поиск друзей у заданного пользователя
+     *
+     * @param id - идентификатор пользователя
+     * @return - список друзей пользователя
+     */
+    @GetMapping("/{id}/friends")
+    public Collection<User> findUsersFriends(@PathVariable Integer id) {
+        log.info("Ищем друзей пользователя id={}.", id);
+        return service.getUsersFriends(id);
+    }
+
+    /**
+     * Метод поиска общих друзей у двух пользователей
+     *
+     * @param id      - идентификатор пользователя
+     * @param otherId - идентификатор другого пользователя
+     * @return - список общих друзей
+     */
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> findCommonFriends(@PathVariable("id") Integer id,
+                                              @PathVariable("otherId") Integer otherId) {
+        log.info("Ищем общих друзей пользователй: {}, {}.", id, otherId);
+        return service.getCommonFriends(id, otherId);
     }
 
     /**
@@ -36,15 +84,10 @@ public class UserController extends AbstractController<User> {
      * @return - подтверждение добавленного объекта
      */
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public User addNewUser(@Validated(Marker.OnBasic.class) @RequestBody User user) {
-        // "имя для отображения может быть пустым
-        // — в таком случае будет использован логин" (ТЗ-№10)
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-
-        log.info("Creating user : {}.", user.toString());
-        return super.addNew(user);
+        log.info("Создаем пользователя : {}.", user.toString());
+        return service.addNewUser(user);
     }
 
     /**
@@ -56,26 +99,41 @@ public class UserController extends AbstractController<User> {
      * @return - подтверждение обновленного объекта
      */
     @PutMapping
+    @ResponseStatus(HttpStatus.OK)
     public User updateUser(@Validated(Marker.OnUpdate.class) @RequestBody User updUser) {
         Integer id = updUser.getId();
-        User user = new User(super.getElement(id));
+        log.info("Обновляем данные о пользователе id={} : {}", id, updUser.toString());
+        return service.updateUser(updUser);
+    }
 
-        // Обновляем информаию во временном объекте
-        if (updUser.getEmail() != null) {
-            user.setEmail(updUser.getEmail());
-        }
-        if (updUser.getLogin() != null) {
-            user.setLogin(updUser.getLogin());
-        }
-        if (updUser.getName() != null) {
-            user.setName(updUser.getName());
-        }
-        if (updUser.getBirthday() != null) {
-            user.setBirthday(updUser.getBirthday());
-        }
+    /**
+     * Метод добаления в "друзья"
+     *
+     * @param userId   - идентификатор пользоателя
+     * @param friendId - идентификатор друга
+     * @return - сообщение о добавлении друга
+     */
+    @PutMapping("/{userId}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void addFriends(@PathVariable("userId") Integer userId,
+                           @PathVariable("friendId") Integer friendId) {
+        log.info("Добавляем в \"друзья\" пользователей id1={}, id2={}", userId, friendId);
+        service.addFriends(userId, friendId);
+    }
 
-        log.info("Updating user id={} : {}", id, user.toString());
-        return super.update(user);
+    /**
+     * Метод удаления пользователя из "друзей"
+     *
+     * @param id       - идентификатор пользователя
+     * @param friendId - идентификатор друга
+     * @return - сообщение о подтверждении
+     */
+    @DeleteMapping("/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void breakUpFriends(@PathVariable("id") Integer id,
+                               @PathVariable("friendId") Integer friendId) {
+        log.info("Удаляем из \"друзей\" пользователей id1={}, id2={}", id, friendId);
+        service.breakUpFriends(id, friendId);
     }
 
     /**
@@ -84,10 +142,10 @@ public class UserController extends AbstractController<User> {
      * @return - сообщение о выполнении
      */
     @DeleteMapping
-    public String onDelete() {
-        log.info("Deleting all users.");
-        clear();
-        return "All users deleted.";
+    @ResponseStatus(HttpStatus.OK)
+    public String deleteAllUsers() {
+        log.info("Удаляем всех пользователей.");
+        return service.removeAllUsers();
     }
 
 }

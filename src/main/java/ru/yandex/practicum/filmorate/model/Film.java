@@ -35,6 +35,8 @@ public class Film extends StorageData {
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
     private int duration;
 
+    private Integer rank = 0;
+
     /**
      * Конструктор копирования сведений о фильме
      *
@@ -46,5 +48,7 @@ public class Film extends StorageData {
         this.description = original.getDescription();
         this.releaseDate = original.getReleaseDate();
         this.duration = original.getDuration();
+        this.rank = original.getRank();
     }
+
 }

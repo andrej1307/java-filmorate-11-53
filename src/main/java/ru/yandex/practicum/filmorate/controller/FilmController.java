@@ -1,21 +1,32 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
- * Класс обработки http запросов к фильмам.
+ * Класс обработки http запросов к информации о фильмах.
  */
+@Slf4j
 @RestController
 @RequestMapping("/films")
-public class FilmController extends AbstractController<Film> {
-    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
+public class FilmController {
+
+    @Autowired
+    FilmService service;
+
+    @Autowired
+    public FilmController(FilmService service) {
+        this.service = service;
+    }
 
     /**
      * Метод поиска всех фильмов
@@ -23,9 +34,28 @@ public class FilmController extends AbstractController<Film> {
      * @return - список фильмов
      */
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public Collection<Film> findAllFilms() {
-        log.info("Get all films {}.", super.findAll().size());
-        return super.findAll();
+        log.info("Ищем все фильмы {}.", service.findAllFilms().size());
+        return service.findAllFilms();
+    }
+
+    /**
+     * Метод поиска фильма по идентификатору
+     *
+     * @param id - идентификатор
+     * @return - найденный фильм
+     */
+    @GetMapping("/{id}")
+    public Film findFilm(@PathVariable Integer id) {
+        log.info("Ищем фильм id={}.", id);
+        return service.getFilmById(id);
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> findPopularFilms(@RequestParam(defaultValue = "10") int count) {
+        log.info("Ищем популярные {} фильмов.", count);
+        return service.findPopularFilms(count);
     }
 
     /**
@@ -35,11 +65,11 @@ public class FilmController extends AbstractController<Film> {
      * @return - подтверждение добавленного объекта
      */
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Film addNewFilm(@Validated(Marker.OnBasic.class) @RequestBody Film film) {
-        log.info("Creating film: {}.", film.toString());
-        return super.addNew(film);
+        log.info("Добавляем новй фильм: {}.", film.toString());
+        return service.addNewFilm(film);
     }
-
 
     /**
      * Метод обновления информации о фильме.
@@ -50,26 +80,29 @@ public class FilmController extends AbstractController<Film> {
      * @return - подтверждение обновленного объекта
      */
     @PutMapping
+    @ResponseStatus(HttpStatus.OK)
     public Film updateFilm(@Validated(Marker.OnUpdate.class) @RequestBody Film updFilm) {
         Integer id = updFilm.getId();
-        Film film = new Film(getElement(id));
+        log.info("Обновляем информацию о фильме id={} : {}", id, updFilm.toString());
+        return service.updateFilm(updFilm);
+    }
 
-        // Обновляем информаию во временном объекте
-        if (updFilm.getName() != null) {
-            film.setName(updFilm.getName());
-        }
-        if (updFilm.getDescription() != null) {
-            film.setDescription(updFilm.getDescription());
-        }
-        if (updFilm.getReleaseDate() != null) {
-            film.setReleaseDate(updFilm.getReleaseDate());
-        }
-        if (updFilm.getDuration() > 0) {
-            film.setDuration(updFilm.getDuration());
-        }
+    @PutMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Map<String, String> addLike(@PathVariable("id") Integer filmId,
+                                       @PathVariable("userId") Integer userId) {
+        log.debug("Добавляем \"лайк\" фильму {}, от пользователя {}.", filmId, userId);
+        service.addNewLike(filmId, userId);
+        return service.getFilmRank(filmId);
+    }
 
-        log.info("Updating film id={} : {}", id, film.toString());
-        return super.update(film);
+    @DeleteMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Map<String, String> removeLike(@PathVariable("id") Integer filmId,
+                                          @PathVariable("userId") Integer userId) {
+        log.debug("Удаляем \"лайк\" у фильма {}, от пользователя {}.", filmId, userId);
+        service.removeLike(filmId, userId);
+        return service.getFilmRank(filmId);
     }
 
     /**
@@ -78,10 +111,10 @@ public class FilmController extends AbstractController<Film> {
      * @return - сообщение о выполнении
      */
     @DeleteMapping
+    @ResponseStatus(HttpStatus.OK)
     public String onDelete() {
-        log.info("Deleting all films.");
-        clear();
-        return "All films deleted.";
+        log.info("Удаляем все фильмы.");
+        return service.onDelete();
     }
 
 }

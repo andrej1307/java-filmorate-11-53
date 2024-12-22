@@ -1,10 +1,7 @@
-package ru.yandex.practicum.filmorate.controller;
+package ru.yandex.practicum.filmorate.storage;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.model.StorageData;
 
 import java.util.Collection;
@@ -12,11 +9,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Класс работы с элементами хранилища информации
+ * Базовый класс работы с хранилищем в оперативной памяти
  *
- * @param <T>
+ * @param <T> - класс описания элементов хранилища
  */
-public class AbstractController<T extends StorageData> {
+public class InMemoryAbstractStorage<T extends StorageData> {
     private final Map<Integer, T> storage = new HashMap<>();
 
     /**
@@ -25,11 +22,10 @@ public class AbstractController<T extends StorageData> {
      * @param id - идентификатор элемента
      * @return - объект
      */
-    public T getElement(final Integer id) {
+    public T getElement(final Integer id) throws NotFoundException {
         T element = storage.get(id);
         if (element == null) {
-            throw new ValidationException(HttpStatus.NOT_FOUND,
-                    "Не найден Id=" + id);
+            throw new NotFoundException("Не найден Id=" + id);
         }
         return storage.get(id);
     }
@@ -49,11 +45,10 @@ public class AbstractController<T extends StorageData> {
      * @param element - объект для добавления
      * @return - подтверждение добавленного объекта
      */
-    public T addNew(@Validated @RequestBody T element) throws ValidationException {
+    public T addNew(T element) throws ValidationException {
         // Проверяем существование полльзователя для исключения дублирования
         if (storage.containsValue(element)) {
-            throw new ValidationException(HttpStatus.BAD_REQUEST, "Уже существует : "
-                    + element.toString());
+            throw new ValidationException("Уже существует : " + element.toString());
         }
 
         element.setId(getNextId());
@@ -67,12 +62,13 @@ public class AbstractController<T extends StorageData> {
      * @param element - объект с обновленной информацией
      * @return - подтверждение обновленного объекта
      */
-    public T update(@Validated(Marker.OnUpdate.class) @RequestBody T element) throws ValidationException {
+    public T update(T element)
+            throws NotFoundException {
+
         Integer id = element.getId();
         // проверяем необходимые условия
         if (!storage.containsKey(id)) {
-            throw new ValidationException(HttpStatus.NOT_FOUND,
-                    "Не найден Id=" + id);
+            throw new NotFoundException("Не найден Id=" + id);
         }
         storage.put(id, element);
         return element;
