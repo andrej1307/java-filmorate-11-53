@@ -1,208 +1,95 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.Set;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Тестирование ограничений на значения полей класса User.
+ * Автономный тест (Junit).
  */
-@SpringBootTest
-@AutoConfigureMockMvc
+// @SpringBootTest
+// @AutoConfigureMockMvc
 class UserTest {
-    @Autowired
-    MockMvc mvc;
-
-    Gson gson = new GsonBuilder()
-            .setPrettyPrinting()
-            .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
-            .create();
+    private Validator validator;
 
     /**
-     * Удаляем всех пользователей
+     * Перед каждым тестом готовим Validator
      */
     @BeforeEach
-    void setUp(/*@Autowired MockMvc mvc*/) throws Exception {
-        mvc.perform(delete("/users"))
-                .andExpect(status().isOk());
+    void setUp() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
 
     /**
      * Тестирование email пользователя
      */
     @Test
-    void testEmail() throws Exception {
-        User user = new User(null,
+    void testInvalidEmail() throws Exception {
+        User user = new User("",
                 "userTest",
                 "Testing user",
-                LocalDate.now().minusYears(32));
-        String jsonString = gson.toJson(user);
+                LocalDate.now().minusYears(22));
 
-        // Создание пользователя без email
-        // должно возвращать статус 400 "BadRequest"
-        mvc.perform(post("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        user.setEmail("user.domain@");
-        jsonString = gson.toJson(user);
-        // Создание пользователя с неправильным email
-        // должно возвращать статус 400 "BadRequest"
-        mvc.perform(post("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        user.setEmail("user@domain");
-        jsonString = gson.toJson(user);
-        // Создание пользователя с корректным email
-        // должно возвращать статус 200 "Ok"
-        mvc.perform(post("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        Set<ConstraintViolation<User>> violations = validator.validate(user, Marker.OnBasic.class);
+        assertFalse(violations.isEmpty());
     }
 
     /**
      * Тестирование login пользователя
      */
     @Test
-    void testLogin() throws Exception {
+    void testInvalidLogin() throws Exception {
         User user = new User("user1234@test",
-                "",
+                "",  // login не должен быть пустым
                 "Testing user",
                 LocalDate.now().minusYears(32));
-        String jsonString = gson.toJson(user);
 
-        // Создание пользователя с пустым login
-        // должно возвращать статус 400 "BadRequest"
-        mvc.perform(post("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+        Set<ConstraintViolation<User>> violations = validator.validate(user, Marker.OnBasic.class);
+        assertFalse(violations.isEmpty());
 
-        user.setLogin("user test");
-        jsonString = gson.toJson(user);
-        // Создание пользователя с login содержащим пробел
-        // должно возвращать статус 400 "BadRequest"
-        mvc.perform(post("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        user.setLogin("user1234");
-        jsonString = gson.toJson(user);
-        // Создание пользователя с корректным login (содержит только латинские буквы и цифры)
-        // должно возвращать статус 200 "Ok"
-        mvc.perform(post("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        // login должен содержать только буквы и цифры
+        user.setLogin("yu%3242 @#");
+        violations.clear();
+        violations = validator.validate(user, Marker.OnBasic.class);
+        assertFalse(violations.isEmpty());
     }
 
     /**
      * Тестируем корректность даты рождения
      */
     @Test
-    void testBirthday() throws Exception {
+    void testInvalidBirthday() throws Exception {
         User user = new User("user1234@test",
                 "user1234",
                 "Testing user",
-                LocalDate.now().plusDays(30));
+                LocalDate.now().plusDays(1)); // Дата рождения в будущем
 
-        String jsonString = gson.toJson(user);
-        // Создание пользователя с датой рождения в будущем
-        // должно возвращать статус 400 "BadRequest"
-        mvc.perform(post("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        user.setBirthday(LocalDate.now().minusYears(30));
-        jsonString = gson.toJson(user);
-        // Создание тестового пользователя с корректной датой рождения
-        // должно возвращать статус 200 "Ok"
-        mvc.perform(post("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        Set<ConstraintViolation<User>> violations = validator.validate(user, Marker.OnBasic.class);
+        assertFalse(violations.isEmpty());
     }
 
     /**
-     * Тестируем группу аннотаций для режима обновления данных
+     * Тестируем отсутствие ошибок при корректном заполнение полей.
      */
     @Test
-    void testUpdateUser() throws Exception {
+    void testUserOk() {
         User user = new User("user1234@test",
                 "user1234",
                 "Testing user",
-                LocalDate.now().minusYears(32));
-        String jsonString = gson.toJson(user);
-        // Создание тестового пользователя
-        // должно возвращать статус 200 "Ok"
-        mvc.perform(post("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                LocalDate.now().minusYears(18));
 
-        jsonString = "{\"id\": 1, \"email\": \"user.domain@\"}";
-        // Изменение пользователю email на некорректный
-        // должно возвращать статус 400 "BadRequest"
-        mvc.perform(put("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        jsonString = "{\"id\": 1, \"email\": \"user@host.domain\"}";
-        // Изменение пользователю email на допустимый
-        // должно возвращать статус 200 "Ok"
-        mvc.perform(put("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        jsonString = "{\"id\": 1, \"login\": \"user test12\"}";
-        // Изменение пользователю login на некорректный
-        // должно возвращать статус 400 "BadRequest"
-        mvc.perform(put("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        jsonString = "{\"id\": 1, \"login\": \"userTest\"}";
-        // Изменение пользователю login на допустимый
-        // должно возвращать статус 200 "Ok"
-        mvc.perform(put("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        jsonString = "{\"id\": 1, \"birthday\": \"2050-01-01\"}";
-        // Обновление пользователя с датой рождения в будущем
-        // должно возвращать статус 400 "BadRequest"
-        mvc.perform(put("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        jsonString = "{\"id\": 1, \"birthday\": \"2005-01-01\"}";
-        // Обновление пользователя корректной датой рождения
-        // должно возвращать статус 200 "Ok"
-        mvc.perform(put("/users")
-                        .content(jsonString)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        Set<ConstraintViolation<User>> violations = validator.validate(user, Marker.OnBasic.class);
+        assertTrue(violations.isEmpty(), violations.toString());
     }
 }

@@ -33,21 +33,20 @@ class UserControllerTest {
             .create();
 
     /**
-     * Удаляем всех пользователей
+     * Перед каждым тестом удаляем всех пользователей
      */
     @BeforeEach
-    void setUp(/*@Autowired MockMvc mvc*/) throws Exception {
+    void setUp() throws Exception {
         mvc.perform(delete("/users"))
                 .andExpect(status().isOk());
     }
-
 
     /**
      * Тестируем чтение списка пользователей
      */
     @Test
     void findAllUser() throws Exception {
-        addNewUser();
+        makeUsers(3);
 
         mvc.perform(get("/users"))
                 .andExpect(status().isOk())     // ожидается код статус 200
@@ -60,7 +59,7 @@ class UserControllerTest {
     @Test
     void addNewUser() throws Exception {
         User user = new User("User1234@domain",
-                "user1234", "testing user",
+                "user1234", "test user",
                 LocalDate.now().minusYears(22));
         String jsonString = gson.toJson(user);
 
@@ -69,7 +68,7 @@ class UserControllerTest {
         mvc.perform(post("/users")
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         // Повторное добавление пользователя
         // должно возвращать статус 400 "BadRequest"
@@ -93,7 +92,7 @@ class UserControllerTest {
         mvc.perform(post("/users")
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         user.setLogin("user12345");
         user.setName("Updated user.");
@@ -123,5 +122,162 @@ class UserControllerTest {
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    /**
+     * Тестируем добавление друзей
+     *
+     * @throws Exception
+     */
+    @Test
+    void addFriends() throws Exception {
+        makeUsers(3);
+
+        // Объявление в "друзья" несуществующего пользователя
+        // должно возвращать статус 404 "NotFound"
+        mvc.perform(put("/users/1000/friends/1")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        // Объявление в "друзья" несуществующего друга
+        // должно возвращать статус 404 "NotFound()"
+        mvc.perform(put("/users/1/friends/1000")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        // Объявление в "друзья" сущществующих пользователей
+        // должно возвращать статус 200 "ok"
+        mvc.perform(put("/users/1/friends/2")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // Объявление в "друзья" сущществующих пользователей (граничный случай)
+        // должно возвращать статус 200 "ok"
+        mvc.perform(put("/users/3/friends/2")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * Тестируем удаление друзей
+     *
+     * @throws Exception
+     */
+    @Test
+    void removeFriends() throws Exception {
+        addFriends();
+
+        // Удаление из "друзьей"  не сущществующих пользователей
+        // должно возвращать статус 404 "NotFound"
+        mvc.perform(delete("/users/1/friends/1000")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        // Удаление из "друзьей" сущществующих пользователей
+        // должно возвращать статус 200 "Ok"
+        mvc.perform(delete("/users/1/friends/2")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * Тестируем чтение списка друзей
+     *
+     * @throws Exception
+     */
+    @Test
+    void getFriends() throws Exception {
+        makeUsers(3);
+
+        // Объявление в "друзья"
+        // должно возвращать статус 200 "ok"
+        mvc.perform(put("/users/1/friends/2")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // Объявление в "друзья"
+        // должно возвращать статус 200 "ok"
+        mvc.perform(put("/users/3/friends/2")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // читаем список "друзей", несуществующего пользователя
+        // должно возвращать статус 404 "NotFound"
+        mvc.perform(get("/users/2000/friends")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+
+        // читаем список "друзей"
+        // должно возвращать статус 200 "ok"
+        mvc.perform(get("/users/2/friends")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * Тестируем поиск общих друзей
+     *
+     * @throws Exception
+     */
+    @Test
+    void findCommonFrends() throws Exception {
+        makeUsers(3);
+
+        // Объявление в "друзья"
+        // должно возвращать статус 200 "ok"
+        mvc.perform(put("/users/1/friends/2")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // Объявление в "друзья"
+        // должно возвращать статус 200 "ok"
+        mvc.perform(put("/users/3/friends/2")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // читаем список общих "друзей"
+        // должно возвращать статус 200 "ok"
+        mvc.perform(get("/users/1/friends/common/3")
+                        .content("")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * Создание тестовых пользователей
+     *
+     * @param count - требуемое клличество тестовых пользователей
+     * @throws Exception
+     */
+    void makeUsers(int count) throws Exception {
+        StringBuilder fBuilder = new StringBuilder();
+        fBuilder.append("{\"email\": \"user000%d@domain\",");
+        fBuilder.append("\"login\": \"USER000%d\",");
+        fBuilder.append("\"name\": \"userName00%d\",");
+        fBuilder.append("\"birthday\": \"2000-01-%02d\"}");
+        String formatStr = fBuilder.toString();
+
+        for (int i = 1; i <= count; i++) {
+            String jsonString = String.format(formatStr, i, i, i, i);
+            // При успешном добавлении пользователя
+            // должен возвращаться статус 200 "Ok"
+            mvc.perform(post("/users")
+                            .content(jsonString)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isCreated());
+        }
     }
 }
