@@ -25,6 +25,7 @@ public class UserService {
     public UserService(UserStorage userStorage) {
         this.users = userStorage;
     }
+
     /**
      * Метод поиска всех пользователей
      *
