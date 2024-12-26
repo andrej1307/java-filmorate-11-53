@@ -4,10 +4,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
- * Класс данных для наследования классов модел
+ * Класс данных для наследования классов модели
  */
 @Data
 public class StorageData {
     @NotNull(groups = {Marker.OnUpdate.class}, message = "id должен быть определен")
-    Integer id;
+    protected Integer id;
 }

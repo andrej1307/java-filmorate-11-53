@@ -19,8 +19,7 @@ import java.util.Collection;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    UserService service;
+    private final UserService service;
 
     @Autowired
     public UserController(UserService service) {

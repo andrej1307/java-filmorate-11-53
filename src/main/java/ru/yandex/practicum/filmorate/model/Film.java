@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Validated
 public class Film extends StorageData {
+
     @NotBlank(message = "Название фильма не может быть пустым.",
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
     private String name;
@@ -36,19 +38,4 @@ public class Film extends StorageData {
     private int duration;
 
     private Integer rank = 0;
-
-    /**
-     * Конструктор копирования сведений о фильме
-     *
-     * @param original - объект копирования
-     */
-    public Film(Film original) {
-        this.id = original.getId();
-        this.name = original.getName();
-        this.description = original.getDescription();
-        this.releaseDate = original.getReleaseDate();
-        this.duration = original.getDuration();
-        this.rank = original.getRank();
-    }
-
 }

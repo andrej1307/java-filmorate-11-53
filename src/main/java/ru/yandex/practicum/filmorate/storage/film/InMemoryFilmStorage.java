@@ -1,40 +1,42 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.InMemoryAbstractStorage;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 @Component
-public class InMemoryFilmStorage extends InMemoryAbstractStorage<Film> implements FilmStorage {
+public class InMemoryFilmStorage implements FilmStorage {
 
+    private final Map<Integer, Film> films = new HashMap<>();
     private final Map<Integer, HashSet<Integer>> likes = new HashMap<>();
+    private final List<Film> filmsRating = new ArrayList<>();
+    Integer filmId = 0;
 
     @Override
-    public Film addNewFilm(Film newFilm) {
-        Film film = super.addNew(newFilm);
-        likes.put(film.getId(), new HashSet<>());
+    public Film addNewFilm(Film film) {
+        filmId++;
+        film.setId(filmId);
+        film.setRank(0);
+        films.put(filmId, film);
+        likes.put(filmId, new HashSet<>());
+        filmsRating.add(film);
         return film;
     }
 
     @Override
-    public Film getFilmById(Integer id) {
-        return super.getElement(id);
+    public Optional<Film> getFilmById(Integer id) {
+        return Optional.ofNullable(films.get(id));
     }
 
     @Override
     public Collection<Film> findAllFilms() {
-        return super.findAll();
+        return films.values();
     }
 
     @Override
-    public Film updateFilm(Film updFilm) {
-        return super.update(updFilm);
+    public void updateFilm(Film updFilm) {
+        films.put(updFilm.getId(), updFilm);
     }
 
     /**
@@ -46,11 +48,10 @@ public class InMemoryFilmStorage extends InMemoryAbstractStorage<Film> implement
      */
     @Override
     public Integer addNewLike(Integer filmId, Integer userId) {
-        if (likes.containsKey(filmId)) {
-            likes.get(filmId).add(userId);
-        } else {
-            throw new NotFoundException("Не найден фильм id=" + filmId);
-        }
+        likes.get(filmId).add(userId);
+        Film film = films.get(filmId);
+        film.setRank(likes.get(filmId).size());
+        setFilmsRating(film);
         return likes.get(filmId).size();
     }
 
@@ -63,19 +64,65 @@ public class InMemoryFilmStorage extends InMemoryAbstractStorage<Film> implement
      */
     @Override
     public Integer removeLike(Integer filmId, Integer userId) {
-        if (likes.containsKey(filmId)) {
-            if (!likes.get(filmId).remove(userId)) {
-                throw new NotFoundException("Не найден \"лайк\" id=" + userId);
-            }
-        } else {
-            throw new NotFoundException("Не найден фильм id=" + filmId);
-        }
+        likes.get(filmId).remove(userId);
+        Film film = films.get(filmId);
+        film.setRank(likes.get(filmId).size());
+        setFilmsRating(film);
         return likes.get(filmId).size();
+    }
+
+    /**
+     * Определение позиции фильма в рейтинге.
+     * Так как рейтинг представляет собой уже упорядоченный список,
+     * то сортировать весь список нет смысла.
+     * Нужно уточнить место в рейтинге заданного объекта.
+     *
+     * @param film
+     */
+    private void setFilmsRating(Film film) {
+        int ratingSize = filmsRating.size();
+
+        // Если фильмов меньше двух, то ничего не делаем
+        if (ratingSize < 2) {
+            return;
+        }
+        int index = filmsRating.indexOf(film);
+
+        // Проверяем изменение рейтинга на возрастание
+        while ((index > 0) &&
+                (film.getRank() > filmsRating.get(index - 1).getRank())) {
+            filmsRating.set(index, filmsRating.get(index - 1));
+            filmsRating.set(--index, film);
+        }
+
+        // Проверяем изменение рейтинга на убывание
+        while (index < (ratingSize - 1) &&
+                (film.getRank() < filmsRating.get(index + 1).getRank())) {
+            filmsRating.set(index, filmsRating.get(index + 1));
+            filmsRating.set(++index, film);
+        }
+    }
+
+    /**
+     * Поиск самых популярных фильмов
+     *
+     * @param count - количество фильмов для поиска
+     * @return - список фильмов
+     */
+    @Override
+    public Collection<Film> findPopularFilms(int count) {
+        if (count > filmsRating.size()) {
+            count = filmsRating.size();
+        }
+        return filmsRating.subList(0, count);
+
     }
 
     @Override
     public void removeAllFilms() {
         likes.clear();
-        super.clear();
+        filmsRating.clear();
+        films.clear();
+        filmId = 0;
     }
 }

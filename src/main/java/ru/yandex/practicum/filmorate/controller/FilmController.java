@@ -20,8 +20,7 @@ import java.util.Map;
 @RequestMapping("/films")
 public class FilmController {
 
-    @Autowired
-    FilmService service;
+    private final FilmService service;
 
     @Autowired
     public FilmController(FilmService service) {

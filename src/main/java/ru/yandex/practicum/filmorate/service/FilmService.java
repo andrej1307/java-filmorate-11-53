@@ -3,12 +3,14 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.Storages;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Класс реализации запросов к информации о фильмах
@@ -17,7 +19,13 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
 
-    protected FilmStorage films = Storages.getFilmStorage();
+    private final FilmStorage films;
+    private final UserStorage users;
+
+    public FilmService(FilmStorage filmStorage, UserStorage users) {
+        this.films = filmStorage;
+        this.users = users;
+    }
 
     /**
      * Метод поиска всех фильмов
@@ -25,7 +33,6 @@ public class FilmService {
      * @return - список фильмов
      */
     public Collection<Film> findAllFilms() {
-        log.debug("Service: Ищем все фильмы {}.", films.findAllFilms().size());
         return films.findAllFilms();
     }
 
@@ -36,8 +43,8 @@ public class FilmService {
      * @return - найденный фильм
      */
     public Film getFilmById(Integer id) {
-        log.debug("Service: Ищем фильм id={}.", id);
-        return films.getFilmById(id);
+        return films.getFilmById(id).orElseThrow(() ->
+                new NotFoundException("Не найден фильм id=" + id));
     }
 
     /**
@@ -47,8 +54,10 @@ public class FilmService {
      * @return - подтверждение добавленного объекта
      */
     public Film addNewFilm(Film film) {
-        film.setRank(0); // Для предотвращения ручного ввода рейтинга
-        log.debug("Service: Добавляем информацию о фильме: {}.", film.toString());
+        if (films.findAllFilms().contains(film)) {
+            throw new ValidationException("Фильм уже существует :"
+                    + film.getName());
+        }
         return films.addNewFilm(film);
     }
 
@@ -60,7 +69,8 @@ public class FilmService {
      */
     public Film updateFilm(Film updFilm) {
         Integer id = updFilm.getId();
-        Film film = new Film(films.getFilmById(id));
+        Film film = films.getFilmById(id).orElseThrow(() ->
+                new NotFoundException("Не найден фильм id=" + id));
 
         // Обновляем информаию во временном объекте
         if (updFilm.getName() != null) {
@@ -75,9 +85,7 @@ public class FilmService {
         if (updFilm.getDuration() > 0) {
             film.setDuration(updFilm.getDuration());
         }
-
-        log.debug("Service: Updating film id={} : {}", id, film.toString());
-        return films.updateFilm(film);
+        return film;
     }
 
     /**
@@ -86,42 +94,41 @@ public class FilmService {
      * @return - сообщение о выполнении
      */
     public String onDelete() {
-        log.debug("Service: Удаляем все фильмы.");
         films.removeAllFilms();
         return "Все фильмы удалены.";
     }
 
     public Integer addNewLike(Integer filmId, Integer userId) {
-        log.debug("Service: Добавляем \"лайк\" фильму {}, от пользователя {}.", filmId, userId);
-        if (UserService.users.getUserById(userId) == null) {
-            throw new NotFoundException("Не найден пользователь id=" + userId);
-        }
+        Film film = films.getFilmById(filmId).orElseThrow(() ->
+                new NotFoundException("Не найден фильм id=" + filmId));
+        users.getUserById(userId).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + userId));
 
-        films.getFilmById(filmId).setRank(films.addNewLike(filmId, userId));
-        return films.getFilmById(filmId).getRank();
+        film.setRank(films.addNewLike(filmId, userId));
+        return film.getRank();
     }
 
     public Integer removeLike(Integer filmId, Integer userId) {
-        log.debug("Service: Удаляем \"лайк\" у фильма {}, от пользователя {}.", filmId, userId);
-        films.getFilmById(filmId).setRank(films.removeLike(filmId, userId));
-        return films.getFilmById(filmId).getRank();
+        Film film = films.getFilmById(filmId).orElseThrow(() ->
+                new NotFoundException("Не найден фильм id=" + filmId));
+        users.getUserById(userId).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + userId));
+
+        film.setRank(films.removeLike(filmId, userId));
+        return film.getRank();
     }
 
     public Collection<Film> findPopularFilms(int count) {
-        List<Film> popularFilms = new ArrayList<>();
-        popularFilms = films.findAllFilms().stream()
-                .sorted(Comparator.comparing(Film::getRank).reversed())
-                .collect(Collectors.toList());
-        if (count > popularFilms.size()) {
-            count = popularFilms.size();
-        }
-        return popularFilms.subList(0, count);
+        return films.findPopularFilms(count);
     }
 
     public Map<String, String> getFilmRank(Integer filmId) {
+        Film film = films.getFilmById(filmId).orElseThrow(() ->
+                new NotFoundException("Не найден фильм id=" + filmId));
+
         Map<String, String> response = new HashMap<>();
-        response.put("Фильм  :", films.getFilmById(filmId).toString());
-        response.put("Рейтинг:", films.getFilmById(filmId).getRank().toString());
+        response.put("Фильм  ", film.getName());
+        response.put("Рейтинг", film.getRank().toString());
         return response;
     }
 }

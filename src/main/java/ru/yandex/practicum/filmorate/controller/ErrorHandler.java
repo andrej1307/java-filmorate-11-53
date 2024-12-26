@@ -101,4 +101,16 @@ public class ErrorHandler {
                 .body(new ErrorMessage("В запросе отсутствуют необходимые данные."));
     }
 
+    /**
+     * Обработка непредвиденного исключения
+     *
+     * @param e - исключение
+     * @return - сообщение об ошибке
+     */
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorMessage handleException(final Exception e) {
+        log.warn("Error", e);
+        return new ErrorMessage(e.getMessage());
+    }
 }

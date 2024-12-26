@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.Storages;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
@@ -17,15 +19,18 @@ import java.util.List;
 @Service
 public class UserService {
 
-    protected static UserStorage users = Storages.getUerStorage();
+    private final UserStorage users;
 
+    @Autowired
+    public UserService(UserStorage userStorage) {
+        this.users = userStorage;
+    }
     /**
      * Метод поиска всех пользователей
      *
      * @return - список пользователей
      */
     public Collection<User> findAllUsers() {
-        log.debug("Sevice: Get all users {}.", users.findAllUsers().size());
         return users.findAllUsers();
     }
 
@@ -41,8 +46,10 @@ public class UserService {
         if (user.getName() == null | user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-
-        log.debug("Sevice: Creating user : {}.", user.toString());
+        if (users.findAllUsers().contains(user)) {
+            throw new ValidationException("Пользователь уже существует "
+                        + user.getEmail());
+        }
         return users.addNewUser(user);
     }
 
@@ -53,8 +60,9 @@ public class UserService {
      * @return - найденный объект
      */
     public User getUserById(Integer id) {
-        log.debug("Sevice: Get user {}.", id);
-        return users.getUserById(id);
+        User user = users.getUserById(id).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + id));
+        return user;
     }
 
     /**
@@ -67,7 +75,8 @@ public class UserService {
      */
     public User updateUser(User updUser) {
         Integer id = updUser.getId();
-        User user = new User(users.getUserById(id));
+        User user = users.getUserById(id).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + id));
 
         // Обновляем информаию во временном объекте
         if (updUser.getEmail() != null) {
@@ -82,9 +91,7 @@ public class UserService {
         if (updUser.getBirthday() != null) {
             user.setBirthday(updUser.getBirthday());
         }
-
-        log.debug("Sevice: Updating user id={} : {}", id, user.toString());
-        return users.updateUser(user);
+        return user;
     }
 
     /**
@@ -106,6 +113,11 @@ public class UserService {
      * @param id2 - идентификатор друга
      */
     public void addFriends(Integer id1, Integer id2) {
+        users.getUserById(id1).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + id1));
+        users.getUserById(id2).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + id2));
+
         // Добавление в друзья происходит без подтверждения.
         // Еслb id1 дружит с id2, то автоматически id2 дружит с id1
         users.addFriend(id1, id2);
@@ -120,7 +132,11 @@ public class UserService {
      * @return - сообщение о подтверждении
      */
     public void breakUpFriends(Integer id1, Integer id2) {
-        log.debug("Sevice: Удаляем из \"друзей\" пользователей {}, {}.", id1, id2);
+        users.getUserById(id1).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + id1));
+        users.getUserById(id2).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + id2));
+
         users.breakUpFriends(id1, id2);
     }
 
@@ -131,26 +147,34 @@ public class UserService {
      * @return - список друзей
      */
     public Collection<User> getUsersFriends(Integer userId) {
+        users.getUserById(userId).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + userId));
+
         List<User> friends = new ArrayList<>();
         for (Integer friendId : users.findAllFriends(userId)) {
-            friends.add(users.getUserById(friendId));
+            friends.add(users.getUserById(friendId).get());
         }
         return friends;
     }
 
     /**
-     * Метод поискаобщих друзей пользователей
+     * Метод поиска общих друзей пользователей
      *
      * @param id1 - идентификатор пользователя
      * @param id2 - идентификатор другого пользователя
      * @return - список общих друзей
      */
     public Collection<User> getCommonFriends(Integer id1, Integer id2) {
+        users.getUserById(id1).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + id1));
+        users.getUserById(id2).orElseThrow(() ->
+                new NotFoundException("Не найден пользователь id=" + id2));
+
         List<Integer> friendsId = users.findAllFriends(id1);
         friendsId.retainAll(users.findAllFriends(id2));
         List<User> friends = new ArrayList<>();
         for (Integer id : friendsId) {
-            friends.add(users.getUserById(id));
+            friends.add(users.getUserById(id).get());
         }
         return friends;
     }

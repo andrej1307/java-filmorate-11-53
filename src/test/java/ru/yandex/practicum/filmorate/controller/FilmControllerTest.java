@@ -146,7 +146,6 @@ class FilmControllerTest {
     void addLike() throws Exception {
         makeFilms(3);
 
-
         // При добавлении "лайка" от несуществующего пользователя
         // должен возвращаться статус 404 "NotFound"
         mvc.perform(put("/films/1/like/1000")

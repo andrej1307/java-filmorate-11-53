@@ -3,19 +3,23 @@ package ru.yandex.practicum.filmorate.storage.film;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.Optional;
 
 public interface FilmStorage {
     // добавление нового фильма
     Film addNewFilm(Film newFilm);
 
     // чтение фильма по идентификатору
-    Film getFilmById(Integer id);
+    Optional<Film> getFilmById(Integer id);
 
-    // чтение всех фильмов
+    // поиск всех фильмов
     Collection<Film> findAllFilms();
 
+    // поиск самых популярных фильмов
+    Collection<Film> findPopularFilms(int count);
+
     // изменение сведений о фильме
-    Film updateFilm(Film updFilm);
+    void updateFilm(Film updFilm);
 
     // добавление "лайка" к фильму
     Integer addNewLike(Integer filmId, Integer userId);

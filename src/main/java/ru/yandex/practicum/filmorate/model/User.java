@@ -1,9 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,6 +18,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Validated
 public class User extends StorageData {
+
     @NotBlank(message = "Email не может быть пустым", groups = Marker.OnBasic.class)
     @Email(message = "Email должен удовлетворять правилам формирования почтовых адресов.",
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
@@ -36,17 +34,4 @@ public class User extends StorageData {
     @PastOrPresent(message = "Дата рождения не может быть в будущем.",
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
     private LocalDate birthday;
-
-    /**
-     * Конструктор копирования сведений о пользователе
-     *
-     * @param original - объект копирования
-     */
-    public User(User original) {
-        this.id = original.getId();
-        this.email = original.getEmail();
-        this.login = original.getLogin();
-        this.name = original.getName();
-        this.birthday = original.getBirthday();
-    }
 }
