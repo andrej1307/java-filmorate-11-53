@@ -40,7 +40,7 @@ public class Film extends StorageData {
     private Integer rank = 0;
 
     // рейтинг Ассоциации кинокомпаний
-    private Integer mpaId = 1;
+    private Integer mpaId = 0;
 
     // жанры фильма
     private LinkedHashSet<String> genres = new LinkedHashSet<>();
