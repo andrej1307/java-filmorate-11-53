@@ -10,6 +10,7 @@ import lombok.ToString;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 
 /**
  * Класс описания фильма.
@@ -37,4 +38,11 @@ public class Film extends StorageData {
     private int duration;
 
     private Integer rank = 0;
+
+    // рейтинг Ассоциации кинокомпаний
+    private Integer MPA_id = 0;
+
+    // жанры фильма
+    private LinkedHashSet<String> genres = new LinkedHashSet<>();
+
 }
