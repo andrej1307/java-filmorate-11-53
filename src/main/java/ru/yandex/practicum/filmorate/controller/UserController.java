@@ -5,9 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.util.Collection;
 
@@ -59,7 +59,7 @@ public class UserController {
     @GetMapping("/{id}/friends")
     public Collection<User> findUsersFriends(@PathVariable Integer id) {
         log.info("Ищем друзей пользователя id={}.", id);
-        return service.getUsersFriends(id);
+        return service.getUserFriends(id);
     }
 
     /**

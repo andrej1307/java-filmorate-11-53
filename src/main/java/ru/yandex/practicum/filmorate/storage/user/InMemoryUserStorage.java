@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
 
-@Component
+@Repository("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Integer, User> users = new HashMap<>();
@@ -46,6 +46,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void addFriend(Integer userId, Integer friendId) {
         friends.get(userId).add(friendId);
+        friends.get(friendId).add(userId);
     }
 
     @Override
@@ -55,7 +56,22 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<Integer> findAllFriends(Integer userId) {
-        return new ArrayList<>(friends.get(userId));
+    public Collection<User> getUserFriends(Integer userId) {
+        List<User> dtoFriends = new ArrayList<>();
+        for (Integer friendId : friends.get(userId)) {
+            dtoFriends.add(users.get(friendId));
+        }
+        return dtoFriends;
+    }
+
+    @Override
+    public Collection<User> getCommonFriends(Integer id1, Integer id2) {
+        List<Integer> friendsId = new ArrayList<>(friends.get(id1));
+        friendsId.retainAll(new ArrayList<>(friends.get(id2)));
+        List<User> dtoFriends = new ArrayList<>();
+        for (Integer id : friendsId) {
+            dtoFriends.add(users.get(id));
+        }
+        return dtoFriends;
     }
 }

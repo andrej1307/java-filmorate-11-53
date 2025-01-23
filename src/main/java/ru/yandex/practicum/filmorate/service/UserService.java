@@ -1,16 +1,14 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Класс реализации запросов к информации о пользователях
@@ -21,9 +19,8 @@ public class UserService {
 
     private final UserStorage users;
 
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.users = userStorage;
+    public UserService(@Qualifier("userDbStorage") UserStorage users) {
+        this.users = users;
     }
 
     /**
@@ -49,7 +46,7 @@ public class UserService {
         }
         if (users.findAllUsers().contains(user)) {
             throw new ValidationException("Пользователь уже существует "
-                        + user.getEmail());
+                    + user.getEmail());
         }
         return users.addNewUser(user);
     }
@@ -92,6 +89,8 @@ public class UserService {
         if (updUser.getBirthday() != null) {
             user.setBirthday(updUser.getBirthday());
         }
+
+        users.updateUser(user);
         return user;
     }
 
@@ -119,10 +118,8 @@ public class UserService {
         users.getUserById(id2).orElseThrow(() ->
                 new NotFoundException("Не найден пользователь id=" + id2));
 
-        // Добавление в друзья происходит без подтверждения.
-        // Еслb id1 дружит с id2, то автоматически id2 дружит с id1
+        // Добавление в друзья
         users.addFriend(id1, id2);
-        users.addFriend(id2, id1);
     }
 
     /**
@@ -147,19 +144,15 @@ public class UserService {
      * @param userId - идентификатор пользователя
      * @return - список друзей
      */
-    public Collection<User> getUsersFriends(Integer userId) {
+    public Collection<User> getUserFriends(Integer userId) {
         users.getUserById(userId).orElseThrow(() ->
                 new NotFoundException("Не найден пользователь id=" + userId));
 
-        List<User> friends = new ArrayList<>();
-        for (Integer friendId : users.findAllFriends(userId)) {
-            friends.add(users.getUserById(friendId).get());
-        }
-        return friends;
+        return users.getUserFriends(userId);
     }
 
     /**
-     * Метод поиска общих друзей пользователей
+     * Поиск общих друзей пользователей
      *
      * @param id1 - идентификатор пользователя
      * @param id2 - идентификатор другого пользователя
@@ -171,12 +164,6 @@ public class UserService {
         users.getUserById(id2).orElseThrow(() ->
                 new NotFoundException("Не найден пользователь id=" + id2));
 
-        List<Integer> friendsId = users.findAllFriends(id1);
-        friendsId.retainAll(users.findAllFriends(id2));
-        List<User> friends = new ArrayList<>();
-        for (Integer id : friendsId) {
-            friends.add(users.getUserById(id).get());
-        }
-        return friends;
+        return users.getCommonFriends(id1, id2);
     }
 }

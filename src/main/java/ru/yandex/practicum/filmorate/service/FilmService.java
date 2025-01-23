@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -22,7 +23,7 @@ public class FilmService {
     private final FilmStorage films;
     private final UserStorage users;
 
-    public FilmService(FilmStorage filmStorage, UserStorage users) {
+    public FilmService(FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage users) {
         this.films = filmStorage;
         this.users = users;
     }

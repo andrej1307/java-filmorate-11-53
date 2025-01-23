@@ -1,14 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import org.springframework.validation.annotation.Validated;
+import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.time.LocalDate;
 
@@ -16,11 +12,12 @@ import java.time.LocalDate;
  * Класс описания пользователя.
  */
 @Data
-@ToString(callSuper = false)
-@EqualsAndHashCode(exclude = {"id", "name", "birthday"})
-@AllArgsConstructor
+@EqualsAndHashCode(of = {"email"})
 @Validated
-public class User extends StorageData {
+public class User {
+
+    @NotNull(groups = {Marker.OnUpdate.class}, message = "id должен быть определен")
+    protected Integer id;
 
     @NotBlank(message = "Email не может быть пустым", groups = Marker.OnBasic.class)
     @Email(message = "Email должен удовлетворять правилам формирования почтовых адресов.",

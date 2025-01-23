@@ -1,13 +1,14 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import org.springframework.validation.annotation.Validated;
+import ru.yandex.practicum.filmorate.validator.LegalFilmDate;
+import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
@@ -16,11 +17,12 @@ import java.util.LinkedHashSet;
  * Класс описания фильма.
  */
 @Data
-@ToString(callSuper = false)
-@EqualsAndHashCode(exclude = {"id", "description"}) // при сравнении не учитывать: id, description
-@AllArgsConstructor
+@EqualsAndHashCode(of = {"name", "releaseDate"})
 @Validated
-public class Film extends StorageData {
+public class Film {
+
+    @NotNull(groups = {Marker.OnUpdate.class}, message = "id должен быть определен")
+    protected Integer id;
 
     @NotBlank(message = "Название фильма не может быть пустым.",
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
