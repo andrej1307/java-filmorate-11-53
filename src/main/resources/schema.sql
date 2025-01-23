@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS films (
 -- Создаем таблицу описания жанра фильма
 CREATE TABLE IF NOT EXISTS films_genres (
     film_id INTEGER NOT NULL REFERENCES films(id),
-    genre_id INTEGER NOT NULL REFERENCES genre(id),
+    genre_id INTEGER NOT NULL REFERENCES genres(id),
     PRIMARY KEY (film_id, genre_id)
     );
 
