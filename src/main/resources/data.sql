@@ -1,5 +1,5 @@
 -- Заполняем справочник жанров
-MERGE INTO genre (id, name)
+MERGE INTO genres (id, name)
     VALUES ( 1, 'Комедия.'),
            (2, 'Драма.'),
            (3, 'Драма.'),

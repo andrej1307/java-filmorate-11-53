@@ -11,11 +11,12 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS friends (
     user_id INTEGER NOT NULL REFERENCES users(id),
     friend_id INTEGER NOT NULL REFERENCES users(id),
-    confirmed BOOLEAN NOT NULL DEFAULT FALSE
+    confirmed BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (user_id, friend_id)
     );
 
 -- Создаем справочник жанров фильма
-CREATE TABLE IF NOT EXISTS genre (
+CREATE TABLE IF NOT EXISTS genres (
     id INTEGER PRIMARY KEY,
     name VARCHAR(40) NOT NULL
     );
@@ -38,13 +39,15 @@ CREATE TABLE IF NOT EXISTS films (
     );
 
 -- Создаем таблицу описания жанра фильма
-CREATE TABLE IF NOT EXISTS film_genre (
+CREATE TABLE IF NOT EXISTS films_genres (
     film_id INTEGER NOT NULL REFERENCES films(id),
-    genre_id INTEGER NOT NULL REFERENCES genre(id)
+    genre_id INTEGER NOT NULL REFERENCES genre(id),
+    PRIMARY KEY (film_id, genre_id)
     );
 
 -- Создаем таблицу "лайков" к фильмам
 CREATE TABLE IF NOT EXISTS likes (
     user_id INTEGER NOT NULL REFERENCES users(id),
-    film_id INTEGER NOT NULL REFERENCES films(id)
+    film_id INTEGER NOT NULL REFERENCES films(id),
+    PRIMARY KEY (user_id, film_id)
     );
