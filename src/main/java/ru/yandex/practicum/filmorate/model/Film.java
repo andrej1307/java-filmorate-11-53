@@ -39,8 +39,6 @@ public class Film {
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
     private int duration;
 
-    private Integer rank = 0;
-
     // рейтинг Ассоциации кинокомпаний
     private Integer mpaId = 0;
 

@@ -105,8 +105,7 @@ public class FilmService {
         users.getUserById(userId).orElseThrow(() ->
                 new NotFoundException("Не найден пользователь id=" + userId));
 
-        film.setRank(films.addNewLike(filmId, userId));
-        return film.getRank();
+        return films.addNewLike(filmId, userId);
     }
 
     public Integer removeLike(Integer filmId, Integer userId) {
@@ -115,8 +114,7 @@ public class FilmService {
         users.getUserById(userId).orElseThrow(() ->
                 new NotFoundException("Не найден пользователь id=" + userId));
 
-        film.setRank(films.removeLike(filmId, userId));
-        return film.getRank();
+        return films.removeLike(filmId, userId);
     }
 
     public Collection<Film> findPopularFilms(int count) {
@@ -129,7 +127,7 @@ public class FilmService {
 
         Map<String, String> response = new HashMap<>();
         response.put("Фильм  ", film.getName());
-        response.put("Рейтинг", film.getRank().toString());
+        response.put("Рейтинг", films.getFilmRank(filmId).toString());
         return response;
     }
 }

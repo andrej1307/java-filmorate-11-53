@@ -27,5 +27,8 @@ public interface FilmStorage {
     // удаление "лайка" к фильму
     Integer removeLike(Integer filmId, Integer userId);
 
+    // Чтение числа "лайков" у филььма
+    Integer getFilmRank(Integer filmId);
+
     void removeAllFilms();
 }
