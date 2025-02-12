@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -16,14 +16,14 @@ import java.util.Map;
 /**
  * Класс реализации запросов к информации о фильмах
  */
-@Slf4j
 @Service
 public class FilmService {
 
     private final FilmStorage films;
     private final UserStorage users;
 
-    public FilmService(FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage users) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage users) {
         this.films = filmStorage;
         this.users = users;
     }
@@ -73,7 +73,6 @@ public class FilmService {
         Film film = films.getFilmById(id).orElseThrow(() ->
                 new NotFoundException("Не найден фильм id=" + id));
 
-        // Обновляем информаию во временном объекте
         if (updFilm.getName() != null) {
             film.setName(updFilm.getName());
         }
@@ -86,7 +85,16 @@ public class FilmService {
         if (updFilm.getDuration() > 0) {
             film.setDuration(updFilm.getDuration());
         }
-        return film;
+        if (updFilm.getMpa() != null) {
+            film.setMpa(updFilm.getMpa());
+        }
+        if (updFilm.getGenres().size() > 0) {
+            film.setGenres(updFilm.getGenres());
+        }
+        films.updateFilm(film);
+
+        return films.getFilmById(id).orElseThrow(() ->
+            new InternalServerException("Ошибка обновления фильма id=" + id));
     }
 
     /**
@@ -126,8 +134,8 @@ public class FilmService {
                 new NotFoundException("Не найден фильм id=" + filmId));
 
         Map<String, String> response = new HashMap<>();
-        response.put("Фильм  ", film.getName());
-        response.put("Рейтинг", films.getFilmRank(filmId).toString());
+        response.put("Фильм ", film.getName());
+        response.put("лайков", films.getFilmRank(filmId).toString());
         return response;
     }
 }

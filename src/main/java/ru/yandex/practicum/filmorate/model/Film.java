@@ -18,7 +18,7 @@ import java.util.LinkedHashSet;
  */
 @Data
 @EqualsAndHashCode(of = {"name", "releaseDate"})
-@Validated
+//@Validated
 public class Film {
 
     @NotNull(groups = {Marker.OnUpdate.class}, message = "id должен быть определен")
@@ -40,9 +40,21 @@ public class Film {
     private int duration;
 
     // рейтинг Ассоциации кинокомпаний
-    private Integer mpaId = 0;
+    @NotNull(groups = {Marker.OnBasic.class}, message = "рейтинг MPA должен быть определен")
+    private Mpa mpa;
 
     // жанры фильма
-    private LinkedHashSet<String> genres = new LinkedHashSet<>();
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 
+    public void addGenre(Genre genre) {
+        genres.add(genre);
+    }
+
+    public void removeGenre(Genre genre) {
+        genres.remove(genre);
+    }
+
+    public void clearGenres() {
+        genres.clear();
+    }
 }

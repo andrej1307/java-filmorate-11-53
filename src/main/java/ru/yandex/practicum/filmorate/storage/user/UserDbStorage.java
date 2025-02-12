@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
+import ru.yandex.practicum.filmorate.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Types;
@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Repository("userDbStorage")
 public class UserDbStorage implements UserStorage {
     private static final String SQL_INSERT_USER = "INSERT INTO users (email, login, name, birthday) VALUES (:email, :login, :name, :birthday)";
@@ -117,9 +116,12 @@ public class UserDbStorage implements UserStorage {
      */
     @Override
     public void removeAllUsers() {
-        jdbc.update(SQL_DELETE_USERS, new MapSqlParameterSource()
-                .addValue("id", 0)
-        );
+        jdbc.update("DELETE FROM likes", new MapSqlParameterSource()
+                .addValue("table", "likes"));
+        jdbc.update("DELETE FROM friends", new MapSqlParameterSource()
+                .addValue("table", "friends"));
+        jdbc.update("DELETE FROM users", new MapSqlParameterSource()
+                .addValue("table", "users"));
     }
 
     /**

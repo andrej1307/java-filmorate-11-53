@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -85,6 +86,13 @@ public class ErrorHandler {
         log.info("404 {}.", exception.getMessage());
         return new ErrorMessage(exception.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorMessage notFoundData(DataAccessException exception) {
+        return new ErrorMessage(exception.getMessage());
+    }
+
 
     /**
      * Обработка исключения HttpMessageNotReadableException при поступлении пустого запроса

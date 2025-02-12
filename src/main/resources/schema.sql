@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS genres (
 -- Создаем справочник рейтинга MPA
 CREATE TABLE IF NOT EXISTS MPA (
     id INTEGER PRIMARY KEY,
-    code VARCHAR(8) NOT NULL,
+    name VARCHAR(8) NOT NULL,
     description VARCHAR(80)
     );
 
