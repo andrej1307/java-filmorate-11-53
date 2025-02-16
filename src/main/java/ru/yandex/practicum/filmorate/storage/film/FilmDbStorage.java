@@ -97,7 +97,8 @@ public class FilmDbStorage implements FilmStorage {
             jdbc.batchUpdate(SQL_UPDATE_GENRES, batch);
         }
 
-        return newFilm;
+        return getFilmById(filmId).orElseThrow(() ->
+                new InternalServerException("Ошибка при добавлении фильма."));
     }
 
     /**
@@ -126,7 +127,7 @@ public class FilmDbStorage implements FilmStorage {
                             }
                             do {
                                 Integer genreId = rs.getInt("genre_id");
-                                if (genreId != null) {
+                                if (genreId != 0) {
                                     Genre genre = new Genre();
                                     genre.setId(genreId);
                                     genre.setName(rs.getString("genre_name"));
@@ -139,7 +140,7 @@ public class FilmDbStorage implements FilmStorage {
             );
             return Optional.ofNullable(film);
 
-        } catch (EmptyResultDataAccessException  ignored) {
+        } catch (DataAccessException  ignored) {
             return Optional.empty();
         }
     }
@@ -163,7 +164,7 @@ public class FilmDbStorage implements FilmStorage {
                             while (rs.next()) {
                                 Film film = filmMapper.mapRow(rs, 1);
                                 Integer mpaId = rs.getInt("mpa_id");
-                                if(mpaId != null) {
+                                if(mpaId != 0) {
                                     Mpa mpa = new Mpa();
                                     mpa.setId(mpaId);
                                     mpa.setName(rs.getString("mpa_name"));
@@ -227,7 +228,7 @@ public class FilmDbStorage implements FilmStorage {
                             while (rs.next()) {
                                 Film film = filmMapper.mapRow(rs, 1);
                                 Integer mpaId = rs.getInt("mpa_id");
-                                if(mpaId != null) {
+                                if(mpaId != 0) {
                                     Mpa mpa = new Mpa();
                                     mpa.setId(mpaId);
                                     mpa.setName(rs.getString("mpa_name"));

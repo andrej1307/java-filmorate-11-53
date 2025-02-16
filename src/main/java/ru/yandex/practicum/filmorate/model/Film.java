@@ -17,8 +17,7 @@ import java.util.LinkedHashSet;
  * Класс описания фильма.
  */
 @Data
-@EqualsAndHashCode(of = {"name", "releaseDate"})
-//@Validated
+@EqualsAndHashCode(of = {"name", "releaseDate", "mpa", "genres"})
 public class Film {
 
     @NotNull(groups = {Marker.OnUpdate.class}, message = "id должен быть определен")

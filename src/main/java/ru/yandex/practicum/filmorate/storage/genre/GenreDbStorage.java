@@ -31,7 +31,7 @@ public class GenreDbStorage implements GenreStorage {
      * @return
      */
     @Override
-    public Collection<Genre> getAllGenres() {
+    public Collection<Genre> findAllGenres() {
         try {
             return jdbc.query(SQL_GET_ALL_GENRES, mapper);
         } catch (EmptyResultDataAccessException ignored) {
@@ -46,7 +46,7 @@ public class GenreDbStorage implements GenreStorage {
      * @return - объект Optional
      */
     @Override
-    public Optional<Genre> getGenre(Integer id) {
+    public Optional<Genre> findGenre(Integer id) {
         try {
             Genre genre = jdbc.queryForObject(SQL_GET_GENRE,
                     new MapSqlParameterSource()

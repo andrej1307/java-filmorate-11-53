@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Класс реализации запросов к информации о фильмах
@@ -55,9 +56,11 @@ public class FilmService {
      * @return - подтверждение добавленного объекта
      */
     public Film addNewFilm(Film film) {
-        if (films.findAllFilms().contains(film)) {
-            throw new ValidationException("Фильм уже существует :"
-                    + film.getName());
+        Optional<Film> existingFilm = films.findAllFilms().stream()
+                .filter(film1 -> film1.equals(film))
+                .findFirst();
+        if (existingFilm.isPresent()) {
+            throw new ValidationException("Фильм уже существует: " + existingFilm.get());
         }
         return films.addNewFilm(film);
     }

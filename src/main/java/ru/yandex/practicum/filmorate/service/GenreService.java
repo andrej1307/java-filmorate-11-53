@@ -16,11 +16,11 @@ public class GenreService {
     }
 
     public Collection<Genre> getAllGenres() {
-        return genereStorage.getAllGenres();
+        return genereStorage.findAllGenres();
     }
 
     public Genre getGenreById(int id) {
-        return genereStorage.getGenre(id).orElseThrow(() ->
-                new NotFoundException("Не найден фильм id=" + id));
+        return genereStorage.findGenre(id).orElseThrow(() ->
+                new NotFoundException("Не найден жанр id=" + id));
     }
 }

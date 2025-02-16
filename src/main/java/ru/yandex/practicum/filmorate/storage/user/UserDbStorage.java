@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -24,14 +25,19 @@ public class UserDbStorage implements UserStorage {
     private static final String SQL_ADD_FRIEND = "MERGE INTO friends (user_id, friend_id, confirmed) VALUES (:userId, :friendId, FALSE)";
     private static final String SQL_REMOVE_FRIEND = "DELETE FROM friends WHERE (user_id = :userId) AND (friend_id = :friendId)";
 
+    @Autowired
+    private NamedParameterJdbcTemplate jdbc;
 
-    private final NamedParameterJdbcTemplate jdbc;
-    private final UserRowMapper mapper;
+    @Autowired
+    private UserRowMapper mapper;
 
-    public UserDbStorage(NamedParameterJdbcTemplate jdbc, UserRowMapper mapper) {
+    /*
+    public UserDbStorage(NamedParameterJdbcTemplate jdbc,
+                         UserRowMapper mapper) {
         this.jdbc = jdbc;
         this.mapper = mapper;
     }
+*/
 
     /**
      * Добавление в базу нового пользователя
