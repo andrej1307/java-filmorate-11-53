@@ -26,4 +26,6 @@ public interface UserStorage {
     Collection<User> getUserFriends(Integer userId);
 
     Collection<User> getCommonFriends(Integer id1, Integer id2);
+
+    String getDbInfo();
 }

@@ -17,27 +17,18 @@ import java.util.Optional;
 
 @Repository("userDbStorage")
 public class UserDbStorage implements UserStorage {
+    /*
     private static final String SQL_INSERT_USER = "INSERT INTO users (email, login, name, birthday) VALUES (:email, :login, :name, :birthday)";
     private static final String SQL_UPDATE_USER = "UPDATE users SET email = :email, login = :login, name = :name, birthday = :birthday WHERE id = :id";
     private static final String SQL_FIND_USER = "SELECT * FROM users WHERE id = :id";
-    private static final String SQL_FIND_ALL_USERS = "SELECT * FROM users";
     private static final String SQL_DELETE_USERS = "DELETE FROM users WHERE id <> :id";
     private static final String SQL_ADD_FRIEND = "MERGE INTO friends (user_id, friend_id, confirmed) VALUES (:userId, :friendId, FALSE)";
     private static final String SQL_REMOVE_FRIEND = "DELETE FROM friends WHERE (user_id = :userId) AND (friend_id = :friendId)";
 
+     */
+
     @Autowired
     private NamedParameterJdbcTemplate jdbc;
-
-    @Autowired
-    private UserRowMapper mapper;
-
-    /*
-    public UserDbStorage(NamedParameterJdbcTemplate jdbc,
-                         UserRowMapper mapper) {
-        this.jdbc = jdbc;
-        this.mapper = mapper;
-    }
-*/
 
     /**
      * Добавление в базу нового пользователя
@@ -50,7 +41,7 @@ public class UserDbStorage implements UserStorage {
         // для доступа к сгенерированому ключу новой записи создаем объект GeneratedKeyHolder
         GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 
-        jdbc.update(SQL_INSERT_USER,
+        jdbc.update("INSERT INTO users (email, login, name, birthday) VALUES (:email, :login, :name, :birthday)",
                 new MapSqlParameterSource()
                         .addValue("email", newUser.getEmail())
                         .addValue("login", newUser.getLogin())
@@ -73,10 +64,10 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Optional<User> getUserById(Integer id) {
         try {
-            User user = jdbc.queryForObject(SQL_FIND_USER,
+            User user = jdbc.queryForObject("SELECT * FROM users WHERE id = :id",
                     new MapSqlParameterSource()
                             .addValue("id", id),
-                    mapper);
+                    new UserRowMapper());
             return Optional.ofNullable(user);
         } catch (EmptyResultDataAccessException ignored) {
             return Optional.empty();
@@ -91,7 +82,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> findAllUsers() {
         try {
-            return jdbc.query(SQL_FIND_ALL_USERS, mapper);
+            return jdbc.query("SELECT * FROM users", new UserRowMapper());
         } catch (EmptyResultDataAccessException ignored) {
             return List.of();
         }
@@ -111,7 +102,7 @@ public class UserDbStorage implements UserStorage {
         params.addValue("birthday", updUser.getBirthday(), Types.DATE);
         params.addValue("id", updUser.getId());
 
-        int rowsUpdated = jdbc.update(SQL_UPDATE_USER, params);
+        int rowsUpdated = jdbc.update("UPDATE users SET email = :email, login = :login, name = :name, birthday = :birthday WHERE id = :id", params);
         if (rowsUpdated == 0) {
             throw new InternalServerException("Не удалось обновить данные");
         }
@@ -138,7 +129,7 @@ public class UserDbStorage implements UserStorage {
      */
     @Override
     public void addFriend(Integer userId, Integer friendId) {
-        jdbc.update(SQL_ADD_FRIEND, new MapSqlParameterSource()
+        jdbc.update("MERGE INTO friends (user_id, friend_id, confirmed) VALUES (:userId, :friendId, FALSE)", new MapSqlParameterSource()
                 .addValue("userId", userId)
                 .addValue("friendId", friendId)
         );
@@ -152,7 +143,7 @@ public class UserDbStorage implements UserStorage {
      */
     @Override
     public void breakUpFriends(Integer userId, Integer friendsId) {
-        jdbc.update(SQL_REMOVE_FRIEND, new MapSqlParameterSource()
+        jdbc.update("DELETE FROM friends WHERE (user_id = :userId) AND (friend_id = :friendId)", new MapSqlParameterSource()
                 .addValue("userId", userId)
                 .addValue("friendId", friendsId)
         );
@@ -171,7 +162,7 @@ public class UserDbStorage implements UserStorage {
         try {
             return jdbc.query(sql, new MapSqlParameterSource()
                             .addValue("userId", userId),
-                    mapper
+                    new UserRowMapper()
             );
         } catch (EmptyResultDataAccessException ignored) {
             return List.of();
@@ -195,10 +186,14 @@ public class UserDbStorage implements UserStorage {
             return jdbc.query(sql, new MapSqlParameterSource()
                             .addValue("userId1", id1)
                             .addValue("userId2", id2),
-                    mapper
-            );
+                    new UserRowMapper());
         } catch (EmptyResultDataAccessException ignored) {
             return List.of();
         }
+    }
+
+    @Override
+    public String getDbInfo() {
+        return jdbc.getJdbcTemplate().getDataSource().toString();
     }
 }

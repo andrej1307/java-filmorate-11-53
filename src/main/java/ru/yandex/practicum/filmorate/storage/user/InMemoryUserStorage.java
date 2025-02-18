@@ -74,4 +74,8 @@ public class InMemoryUserStorage implements UserStorage {
         }
         return dtoFriends;
     }
+
+    public String getDbInfo() {
+        return "*";
+    }
 }
