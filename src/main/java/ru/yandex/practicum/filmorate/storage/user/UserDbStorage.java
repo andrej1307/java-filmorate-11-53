@@ -192,8 +192,4 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-    @Override
-    public String getDbInfo() {
-        return jdbc.getJdbcTemplate().getDataSource().toString();
-    }
 }

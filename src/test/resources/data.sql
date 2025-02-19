@@ -15,6 +15,7 @@ MERGE INTO MPA (id, name, description)
            (4, 'R', 'лицам до 17 лет просматривать фильм можно только в присутствии взрослого'),
            (5, 'NC-17', 'лицам до 18 лет просмотр запрещён');
 
+-- Создаем тестового пользователя
 INSERT INTO users (email, login, name, birthday)
 VALUES ( 'test@test.com', 'testLogin', 'testName', '2001-9-22' );
 

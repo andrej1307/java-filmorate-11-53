@@ -147,10 +147,4 @@ public class UserController {
         return service.removeAllUsers();
     }
 
-
-    @GetMapping("/dbinfo")
-    public String getDbInfo() {
-        return service.getDdInfo();
-    }
-
 }

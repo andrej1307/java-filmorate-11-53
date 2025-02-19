@@ -168,8 +168,4 @@ public class UserService {
         return users.getCommonFriends(id1, id2);
     }
 
-    public String getDdInfo() {
-        return users.getDbInfo();
-    }
-
 }
