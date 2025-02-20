@@ -17,15 +17,12 @@ import java.util.Optional;
 
 @Repository("userDbStorage")
 public class UserDbStorage implements UserStorage {
-    /*
+
     private static final String SQL_INSERT_USER = "INSERT INTO users (email, login, name, birthday) VALUES (:email, :login, :name, :birthday)";
-    private static final String SQL_UPDATE_USER = "UPDATE users SET email = :email, login = :login, name = :name, birthday = :birthday WHERE id = :id";
     private static final String SQL_FIND_USER = "SELECT * FROM users WHERE id = :id";
-    private static final String SQL_DELETE_USERS = "DELETE FROM users WHERE id <> :id";
+    private static final String SQL_UPDATE_USER = "UPDATE users SET email = :email, login = :login, name = :name, birthday = :birthday WHERE id = :id";
     private static final String SQL_ADD_FRIEND = "MERGE INTO friends (user_id, friend_id, confirmed) VALUES (:userId, :friendId, FALSE)";
     private static final String SQL_REMOVE_FRIEND = "DELETE FROM friends WHERE (user_id = :userId) AND (friend_id = :friendId)";
-
-     */
 
     @Autowired
     private NamedParameterJdbcTemplate jdbc;
@@ -41,7 +38,7 @@ public class UserDbStorage implements UserStorage {
         // для доступа к сгенерированому ключу новой записи создаем объект GeneratedKeyHolder
         GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
 
-        jdbc.update("INSERT INTO users (email, login, name, birthday) VALUES (:email, :login, :name, :birthday)",
+        jdbc.update(SQL_INSERT_USER,
                 new MapSqlParameterSource()
                         .addValue("email", newUser.getEmail())
                         .addValue("login", newUser.getLogin())
@@ -64,7 +61,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Optional<User> getUserById(Integer id) {
         try {
-            User user = jdbc.queryForObject("SELECT * FROM users WHERE id = :id",
+            User user = jdbc.queryForObject(SQL_FIND_USER,
                     new MapSqlParameterSource()
                             .addValue("id", id),
                     new UserRowMapper());
@@ -102,7 +99,7 @@ public class UserDbStorage implements UserStorage {
         params.addValue("birthday", updUser.getBirthday(), Types.DATE);
         params.addValue("id", updUser.getId());
 
-        int rowsUpdated = jdbc.update("UPDATE users SET email = :email, login = :login, name = :name, birthday = :birthday WHERE id = :id", params);
+        int rowsUpdated = jdbc.update(SQL_UPDATE_USER, params);
         if (rowsUpdated == 0) {
             throw new InternalServerException("Не удалось обновить данные");
         }
@@ -129,7 +126,7 @@ public class UserDbStorage implements UserStorage {
      */
     @Override
     public void addFriend(Integer userId, Integer friendId) {
-        jdbc.update("MERGE INTO friends (user_id, friend_id, confirmed) VALUES (:userId, :friendId, FALSE)", new MapSqlParameterSource()
+        jdbc.update(SQL_ADD_FRIEND, new MapSqlParameterSource()
                 .addValue("userId", userId)
                 .addValue("friendId", friendId)
         );
@@ -143,7 +140,7 @@ public class UserDbStorage implements UserStorage {
      */
     @Override
     public void breakUpFriends(Integer userId, Integer friendsId) {
-        jdbc.update("DELETE FROM friends WHERE (user_id = :userId) AND (friend_id = :friendId)", new MapSqlParameterSource()
+        jdbc.update(SQL_REMOVE_FRIEND, new MapSqlParameterSource()
                 .addValue("userId", userId)
                 .addValue("friendId", friendsId)
         );
