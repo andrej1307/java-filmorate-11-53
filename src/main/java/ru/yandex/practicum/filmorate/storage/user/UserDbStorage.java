@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -66,7 +67,7 @@ public class UserDbStorage implements UserStorage {
                             .addValue("id", id),
                     new UserRowMapper());
             return Optional.ofNullable(user);
-        } catch (EmptyResultDataAccessException ignored) {
+        } catch (DataAccessException ignored) {
             return Optional.empty();
         }
     }

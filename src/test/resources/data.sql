@@ -22,3 +22,13 @@ VALUES ( 'test@test.com', 'testLogin', 'testName', '2001-9-22' ),
        ('user2@test.com', 'userTest2', 'userNane2', '2002-02-02'),
        ('user3@test.com', 'userTest3', 'userNane3', '2003-03-03');
 
+-- Создаем тестовые фильмы
+INSERT INTO films (name, description, releasedate, len_min, mpa_id)
+VALUES ( 'TestFilmName',  'TestFilmDescription', '2001-02-03', 51, 1),
+       ( 'TestFilmName2',  'TestFilmDescription2', '2002-03-04', 62, 2),
+       ( 'TestFilmName3',  'TestFilmDescription3', '2003-04-05', 73, 3),
+       ( 'TestFilmName4',  'TestFilmDescription4', '2004-05-06', 92, 4);
+
+INSERT INTO films_genres (film_id, genre_id)
+VALUES ( 1, 1 );
+

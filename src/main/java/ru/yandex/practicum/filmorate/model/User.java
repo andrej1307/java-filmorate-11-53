@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
@@ -13,6 +15,8 @@ import java.time.LocalDate;
  */
 @Data
 @EqualsAndHashCode(of = {"email"})
+@NoArgsConstructor
+@AllArgsConstructor
 @Validated
 public class User {
 
@@ -34,4 +38,11 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем.",
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
     private LocalDate birthday;
+
+    public User(String email, String login, String name, LocalDate birthday) {
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+    }
 }

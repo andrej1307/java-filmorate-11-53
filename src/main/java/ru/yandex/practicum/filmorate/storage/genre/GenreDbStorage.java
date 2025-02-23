@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.genre;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -17,13 +18,8 @@ public class GenreDbStorage implements GenreStorage {
     private static final String SQL_GET_ALL_GENRES = "SELECT * FROM genres";
     private static final String SQL_GET_GENRE = "SELECT * FROM genres WHERE id = :id";
 
-    private final NamedParameterJdbcTemplate jdbc;
-    private final GenreRowMapper mapper;
-
-    public GenreDbStorage(NamedParameterJdbcTemplate jdbc, GenreRowMapper mapper) {
-        this.jdbc = jdbc;
-        this.mapper = mapper;
-    }
+    @Autowired
+    private NamedParameterJdbcTemplate jdbc;
 
     /**
      * Чтение всех жанров в справочнике
@@ -33,7 +29,7 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public Collection<Genre> findAllGenres() {
         try {
-            return jdbc.query(SQL_GET_ALL_GENRES, mapper);
+            return jdbc.query(SQL_GET_ALL_GENRES, new GenreRowMapper());
         } catch (EmptyResultDataAccessException ignored) {
             return List.of();
         }
@@ -51,7 +47,7 @@ public class GenreDbStorage implements GenreStorage {
             Genre genre = jdbc.queryForObject(SQL_GET_GENRE,
                     new MapSqlParameterSource()
                             .addValue("id", id),
-                    mapper);
+                    new GenreRowMapper());
             return Optional.ofNullable(genre);
         } catch (EmptyResultDataAccessException ignored) {
             return Optional.empty();

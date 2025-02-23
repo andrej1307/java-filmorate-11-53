@@ -28,8 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({UserDbStorage.class})
 class UserDbStorageTest {
-    private final UserDbStorage userDbStorage;
     public static final int TEST_USER_ID = 1;
+
+    private final UserDbStorage userDbStorage;
 
     /**
      * Генерация тестового пользователя
@@ -77,7 +78,6 @@ class UserDbStorageTest {
                 "addNewUser() - При добавлении пользователя в базу должен быть присвоен не нулевой идентификатор");
 
         Optional<User> userOptional = userDbStorage.getUserById(userDb.getId());
-
         assertThat(userOptional)
                 .isPresent()
                 .get()
@@ -159,6 +159,18 @@ class UserDbStorageTest {
         assertTrue(friends.size() == 3,
                 "getUserFriends() - Количество друзй пользователя id="
                         + TEST_USER_ID + " не соответствует ожидаемому.");
+
+        User testFriend = userDbStorage.getUserById(2).get();
+        assertTrue(friends.contains(testFriend),
+                "getUserFriends() - В списке друзей не найден " + testFriend.toString());
+
+        testFriend = userDbStorage.getUserById(3).get();
+        assertTrue(friends.contains(testFriend),
+                "getUserFriends() - В списке друзей не найден " + testFriend.toString());
+
+        testFriend = userDbStorage.getUserById(4).get();
+        assertTrue(friends.contains(testFriend),
+                "getUserFriends() - В списке друзей не найден " + testFriend.toString());
     }
 
     /**
