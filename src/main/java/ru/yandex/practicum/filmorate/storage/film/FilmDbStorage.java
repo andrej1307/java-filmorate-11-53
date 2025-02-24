@@ -29,7 +29,7 @@ public class FilmDbStorage implements FilmStorage {
     private static final String SQL_INSERT_FILM =
             "INSERT INTO films (name, description, releasedate, len_min, mpa_id)" +
                     "VALUES ( :name, :description, :releasedate, :len_min, :mpa_id)";
-    private final String SQL_UPDATE_GENRES = "MERGE INTO films_genres (film_id, genre_id) " +
+    private static final String SQL_UPDATE_GENRES = "MERGE INTO films_genres (film_id, genre_id) " +
             "VALUES (:film_id, :genre_id)";
     private static final String SQL_FIND_FILM_BY_ID = "SELECT f.*, mpa.name as mpa_name, fg.genre_id, g.name AS genre_name\n" +
             "            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)\n" +
