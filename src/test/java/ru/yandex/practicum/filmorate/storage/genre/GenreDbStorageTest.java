@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Тестирование справочника жанров фильа
- *
+ * <p>
  * Для успешного выполнения тестов, при инициализации базы данных
  * должндолжен быть полностью заполнен справочник жанров.
  * Файл первоначальных данных ./src/test/resources/data.sql
@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GenreDbStorageTest {
 
     private final GenreDbStorage genreDbStorage;
-    private static List<Genre> testGenres = new ArrayList<>();
+    private static final List<Genre> testGenres = new ArrayList<>();
 
     /**
      * Инициализация эталонного списка жанров.

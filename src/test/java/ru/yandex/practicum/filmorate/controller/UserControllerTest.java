@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,10 @@ class UserControllerTest {
             .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
             .create();
 
+    // Определяем тип сериализации списка
+    class UserListTypeToken extends TypeToken<List<User>> {
+    }
+
     /**
      * Тестируем чтение списка пользователей
      */
@@ -51,7 +56,7 @@ class UserControllerTest {
         MvcResult result = mvc.perform(get("/users"))
                 .andExpect(status().isOk())      // ожидается код статус 200
                 .andReturn();
-        List<User> users = gson.fromJson(result.getResponse().getContentAsString(), List.class);
+        List<User> users = gson.fromJson(result.getResponse().getContentAsString(), new UserListTypeToken().getType());
         assertTrue(!users.isEmpty(),
                 "Список пользователей пуст.");
     }
@@ -241,7 +246,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        List<User> users = gson.fromJson(result.getResponse().getContentAsString(), List.class);
+        List<User> users = gson.fromJson(result.getResponse().getContentAsString(), new UserListTypeToken().getType());
         assertTrue(users.size() == 2,
                 "Количество найденых \"друзей\" не соответствует ожидаемому.");
     }
@@ -287,7 +292,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
-        List<User> users = gson.fromJson(result.getResponse().getContentAsString(), List.class);
+        List<User> users = gson.fromJson(result.getResponse().getContentAsString(), new UserListTypeToken().getType());
         assertTrue(users.size() == 2,
                 "Количество общих \"друзей\" не соответствует ожидаемому.");
     }

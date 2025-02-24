@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Тестирование ограничений на значения полей класса Film
- * Автономный тест (Junit).
  */
 class FilmTest {
     private Validator validator;

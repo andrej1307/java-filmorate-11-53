@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Тестирование ограничений на значения полей класса User.
- * Автономный тест.
  */
 class UserTest {
     private Validator validator;
