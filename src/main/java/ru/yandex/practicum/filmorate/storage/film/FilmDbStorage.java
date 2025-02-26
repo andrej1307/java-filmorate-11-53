@@ -158,7 +158,7 @@ public class FilmDbStorage implements FilmStorage {
      */
     @Override
     public Collection<Film> findPopularFilms(int count) {
-        if (count > 0 ) {
+        if (count > 0) {
             return findFilmsByQuery(SQL_FIND_POPULAR_FILMS + " LIMIT " + count);
         }
         return findFilmsByQuery(SQL_FIND_POPULAR_FILMS);

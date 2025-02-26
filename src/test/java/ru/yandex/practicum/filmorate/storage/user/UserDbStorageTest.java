@@ -75,7 +75,9 @@ class UserDbStorageTest {
         // Проверяем попытку добавить пользвателя с неуникальным Email
         user.setEmail(getTestUser().getEmail());
         assertThrows(DuplicateKeyException.class,
-                () -> { userDbStorage.addNewUser(user); },
+                () -> {
+                    userDbStorage.addNewUser(user);
+                },
                 "Попытка записи неуникального значения Email должна приводить к исключению.");
 
         // меняем Email на уникальный
