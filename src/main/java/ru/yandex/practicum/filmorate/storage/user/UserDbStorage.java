@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-@Repository("userDbStorage")
+@Repository
 public class UserDbStorage implements UserStorage {
 
     private static final String SQL_INSERT_USER = "INSERT INTO users (email, login, name, birthday) VALUES (:email, :login, :name, :birthday)";

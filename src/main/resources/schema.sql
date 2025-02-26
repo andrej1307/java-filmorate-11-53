@@ -1,7 +1,7 @@
 -- Создаем таблицу пользователей
 CREATE TABLE IF NOT EXISTS users (
                                      id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                                     email VARCHAR(255) NOT NULL,
+                                     email VARCHAR(255) UNIQUE NOT NULL,
                                      login VARCHAR(40) NOT NULL,
                                      name VARCHAR(40) NOT NULL,
                                      birthday DATE NOT NULL

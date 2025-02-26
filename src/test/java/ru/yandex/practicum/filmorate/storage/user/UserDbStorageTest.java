@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DuplicateKeyException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -13,8 +14,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Тестирование Хранилища пользователей в базе данных
@@ -68,11 +68,18 @@ class UserDbStorageTest {
     @Test
     void addNewUser() {
         User user = new User();
-        user.setEmail("test@user.test");
         user.setName("TesstUserName");
         user.setLogin("TestUserLogin");
         user.setBirthday(LocalDate.of(2001, 7, 22));
 
+        // Проверяем попытку добавить пользвателя с неуникальным Email
+        user.setEmail(getTestUser().getEmail());
+        assertThrows(DuplicateKeyException.class,
+                () -> { userDbStorage.addNewUser(user); },
+                "Попытка записи неуникального значения Email должна приводить к исключению.");
+
+        // меняем Email на уникальный
+        user.setEmail("test@user.test");
         User userDb = userDbStorage.addNewUser(user);
         assertNotNull(userDb.getId(),
                 "addNewUser() - При добавлении пользователя в базу должен быть присвоен не нулевой идентификатор");

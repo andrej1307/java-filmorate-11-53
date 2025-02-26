@@ -23,22 +23,31 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
 
-@Repository("filmDbStorage")
+@Repository
 public class FilmDbStorage implements FilmStorage {
 
-    private static final String SQL_INSERT_FILM =
-            "INSERT INTO films (name, description, releasedate, len_min, mpa_id)" +
-                    "VALUES ( :name, :description, :releasedate, :len_min, :mpa_id)";
+    private static final String SQL_INSERT_FILM = "INSERT INTO films (name, description, releasedate, len_min, mpa_id)" +
+            "            VALUES ( :name, :description, :releasedate, :len_min, :mpa_id)";
     private static final String SQL_UPDATE_GENRES = "MERGE INTO films_genres (film_id, genre_id) " +
-            "VALUES (:film_id, :genre_id)";
-    private static final String SQL_FIND_FILM_BY_ID = "SELECT f.*, mpa.name as mpa_name, fg.genre_id, g.name AS genre_name\n" +
-            "            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)\n" +
-            "                LEFT JOIN (films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID) ON fg.film_id = f.id\n" +
-            "            WHERE f.id = :id";
+            "            VALUES (:film_id, :genre_id)";
+
     private static final String SQL_UPDATE_FILM = "UPDATE films SET name = :name, description = :description, " +
             "releasedate = :releasedate, len_min = :len_min, mpa_id = :mpa_id  WHERE id = :id";
     private static final String SQL_ADD_LIKE = "MERGE INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
     private static final String SQL_REMOVE_LIKE = "DELETE FROM likes WHERE user_id = :userId AND film_id = :filmId";
+    private static final String SQL_FIND_ALL_FILMS = "SELECT f.*, mpa.name as mpa_name FROM films AS f " +
+            " INNER JOIN mpa ON f.mpa_id = mpa.id";
+    private static final String SQL_FIND_FILM_BY_ID = "SELECT f.*, mpa.name as mpa_name, fg.genre_id, g.name AS genre_name\n" +
+            "            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)\n" +
+            "                LEFT JOIN (films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID) ON fg.film_id = f.id\n" +
+            "            WHERE f.id = :id";
+    private static final String SQL_FIND_POPULAR_FILMS = "SELECT f.*, mpa.name AS mpa_name, popular.count_film\n" +
+            "FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID\n)" +
+            "    LEFT OUTER JOIN\n" +
+            "    (SELECT film_id, count(film_id) as count_film\n" +
+            "     FROM LIKES GROUP BY film_id) AS popular\n" +
+            "        ON f.id = popular.film_id\n" +
+            "ORDER BY popular.count_film DESC\n";
 
     @Autowired
     private NamedParameterJdbcTemplate jdbc;
@@ -138,125 +147,27 @@ public class FilmDbStorage implements FilmStorage {
      */
     @Override
     public Collection<Film> findAllFilms() {
-        try {
-            // Загружаем из базы данных все фильмы
-            Map<Integer, Film> filmsMap = new HashMap<>();
-            filmsMap = jdbc.query("SELECT f.*, mpa.name as mpa_name FROM films AS f INNER JOIN mpa ON f.mpa_id = mpa.id",
-                    new ResultSetExtractor<Map<Integer, Film>>() {
-                        @Override
-                        public Map<Integer, Film> extractData(ResultSet rs)
-                                throws SQLException, DataAccessException {
-                            Map<Integer, Film> fMap = new HashMap<>();
-                            while (rs.next()) {
-                                Film film = new FilmRowMapper().mapRow(rs, 1);
-                                Integer mpaId = rs.getInt("mpa_id");
-                                if (mpaId != 0) {
-                                    Mpa mpa = new Mpa();
-                                    mpa.setId(mpaId);
-                                    mpa.setName(rs.getString("mpa_name"));
-                                    film.setMpa(mpa);
-                                }
-                                fMap.put(film.getId(), film);
-                            }
-                            return fMap;
-                        }
-                    });
-
-            // загружаем из базы данных все ссылки на жанры
-            List<FilmGenre> filmsGenres;
-            filmsGenres = jdbc.query(
-                    "SELECT fg.*, g.name AS genre_name FROM films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID",
-                    new FilmGenreRowMapper());
-
-            // пополням фильмы сведениями о жанрах
-            for (FilmGenre filmGenre : filmsGenres) {
-                Genre genre = new Genre();
-                int filmId = filmGenre.getFilmId();
-                genre.setId(filmGenre.getGenreId());
-                genre.setName(filmGenre.getGenreName());
-                filmsMap.get(filmId).addGenre(genre);
-            }
-
-            return filmsMap.values();
-
-        } catch (EmptyResultDataAccessException ignored) {
-            return List.of();
-        }
-
+        return findFilmsByQuery(SQL_FIND_ALL_FILMS);
     }
 
     /**
      * Поиск популярных фильмов
      *
-     * @param count
-     * @return
+     * @param count - количество фильмов в итоговом списке
+     * @return - список самых популярных фильмов
      */
     @Override
     public Collection<Film> findPopularFilms(int count) {
-        String sql = "SELECT f.*, mpa.name AS mpa_name, popular.count_film\n" +
-                "FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID\n)" +
-                "    LEFT OUTER JOIN\n" +
-                "    (SELECT film_id, count(film_id) as count_film\n" +
-                "     FROM LIKES GROUP BY film_id) AS popular\n" +
-                "        ON f.id = popular.film_id\n" +
-                "ORDER BY popular.count_film DESC\n" +
-                "LIMIT :count";
-
-        Map<Integer, Film> popularFilms;
-        try {
-            popularFilms = jdbc.query(sql, new MapSqlParameterSource()
-                            .addValue("count", count),
-                    new ResultSetExtractor<Map<Integer, Film>>() {
-                        @Override
-                        public Map<Integer, Film> extractData(ResultSet rs)
-                                throws SQLException, DataAccessException {
-                            Map<Integer, Film> mapFilm = new LinkedHashMap<>();
-                            while (rs.next()) {
-                                Film film = new FilmRowMapper().mapRow(rs, 1);
-                                Integer mpaId = rs.getInt("mpa_id");
-                                if (mpaId != 0) {
-                                    Mpa mpa = new Mpa();
-                                    mpa.setId(mpaId);
-                                    mpa.setName(rs.getString("mpa_name"));
-                                    film.setMpa(mpa);
-                                }
-                                mapFilm.put(film.getId(), film);
-                            }
-                            return mapFilm;
-                        }
-                    });
-
-            // загружаем из базы данных соответствующие ссылки на жанры
-            List<Integer> ids = new ArrayList<>(popularFilms.keySet());
-            List<FilmGenre> filmsGenres;
-            filmsGenres = jdbc.query(
-                    "SELECT fg.*, " +
-                            "g.name AS genre_name " +
-                            "FROM films_genres AS fg INNER JOIN genres AS g ON fg.genre_id = g.id " +
-                            "WHERE fg.film_id IN (:values)",
-                    new MapSqlParameterSource()
-                            .addValue("values", ids),
-                    new FilmGenreRowMapper());
-
-            // пополням фильмы сведениями о жанрах
-            for (FilmGenre filmGenre : filmsGenres) {
-                Genre genre = new Genre();
-                int filmId = filmGenre.getFilmId();
-                genre.setId(filmGenre.getGenreId());
-                genre.setName(filmGenre.getGenreName());
-                popularFilms.get(filmId).addGenre(genre);
-            }
-            return popularFilms.values();
-
-        } catch (EmptyResultDataAccessException ignored) {
-            return List.of();
+        if (count > 0 ) {
+            return findFilmsByQuery(SQL_FIND_POPULAR_FILMS + " LIMIT " + count);
         }
+        return findFilmsByQuery(SQL_FIND_POPULAR_FILMS);
     }
 
     /**
      * Обновление сведений о фильме
      *
-     * @param updFilm - обновленный объект
+     * @param updFilm - объект c информацией для обновления. id должен быть определен
      */
     @Override
     public void updateFilm(Film updFilm) {
@@ -282,7 +193,7 @@ public class FilmDbStorage implements FilmStorage {
                         .addValue("filmId", filmId));
 
         // добавляем жанры Фильма если определены новые
-        if (updFilm.getGenres().size() > 0) {
+        if (!updFilm.getGenres().isEmpty()) {
             SqlParameterSource[] batch = updFilm.getGenres().stream()
                     .map(genre -> new MapSqlParameterSource()
                             .addValue("film_id", updFilm.getId())
@@ -345,6 +256,9 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    /**
+     * Удаление всех фильмов
+     */
     @Override
     public void removeAllFilms() {
         jdbc.update("DELETE FROM likes", new MapSqlParameterSource()
@@ -354,4 +268,62 @@ public class FilmDbStorage implements FilmStorage {
         jdbc.update("DELETE FROM films", new MapSqlParameterSource()
                 .addValue("table", "films"));
     }
+
+    /**
+     * Метод поиска фильмов заполнения их соответствующими жанрами
+     *
+     * @param sqlQueryFilms - строка SQL запроса для выборки всех полей объекта Film
+     * @return - коллекция фильмов.
+     */
+    private Collection<Film> findFilmsByQuery(String sqlQueryFilms) {
+        try {
+            // Загружаем из базы данных информацию о фильмах
+            Map<Integer, Film> filmsMap;
+            filmsMap = jdbc.query(sqlQueryFilms,
+                    new ResultSetExtractor<Map<Integer, Film>>() {
+                        @Override
+                        public Map<Integer, Film> extractData(ResultSet rs)
+                                throws SQLException, DataAccessException {
+                            Map<Integer, Film> fMap = new LinkedHashMap<>();
+                            while (rs.next()) {
+                                Film film = new FilmRowMapper().mapRow(rs, 1);
+                                Integer mpaId = rs.getInt("mpa_id");
+                                if (mpaId != 0) {
+                                    Mpa mpa = new Mpa();
+                                    mpa.setId(mpaId);
+                                    mpa.setName(rs.getString("mpa_name"));
+                                    film.setMpa(mpa);
+                                }
+                                fMap.put(film.getId(), film);
+                            }
+                            return fMap;
+                        }
+                    });
+            // Если ничего не нашли, то возвращаем пустой список
+            if (filmsMap.isEmpty()) {
+                return List.of();
+            }
+
+            // Загружаем из базы данных все ссылки на жанры
+            List<FilmGenre> filmsGenres;
+            filmsGenres = jdbc.query(
+                    "SELECT fg.*, g.name AS genre_name FROM films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID",
+                    new FilmGenreRowMapper());
+
+            // пополням фильмы сведениями о жанрах
+            for (FilmGenre filmGenre : filmsGenres) {
+                int filmId = filmGenre.getFilmId();
+                if (filmsMap.keySet().contains(filmId)) {
+                    Genre genre = new Genre();
+                    genre.setId(filmGenre.getGenreId());
+                    genre.setName(filmGenre.getGenreName());
+                    filmsMap.get(filmId).addGenre(genre);
+                }
+            }
+            return filmsMap.values();
+        } catch (EmptyResultDataAccessException ignored) {
+            return List.of();
+        }
+    }
+
 }
