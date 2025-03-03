@@ -26,28 +26,54 @@ import java.util.*;
 @Repository
 public class FilmDbStorage implements FilmStorage {
 
-    private static final String SQL_INSERT_FILM = "INSERT INTO films (name, description, releasedate, len_min, mpa_id)" +
-            "            VALUES ( :name, :description, :releasedate, :len_min, :mpa_id)";
-    private static final String SQL_UPDATE_GENRES = "MERGE INTO films_genres (film_id, genre_id) " +
-            "            VALUES (:film_id, :genre_id)";
-
-    private static final String SQL_UPDATE_FILM = "UPDATE films SET name = :name, description = :description, " +
-            "releasedate = :releasedate, len_min = :len_min, mpa_id = :mpa_id  WHERE id = :id";
+    private static final String SQL_INSERT_FILM = """
+            INSERT INTO films (name, description, releasedate, len_min, mpa_id)
+            VALUES ( :name, :description, :releasedate, :len_min, :mpa_id)
+            """;
+    private static final String SQL_UPDATE_GENRES = """
+            MERGE INTO films_genres (film_id, genre_id) 
+             VALUES (:film_id, :genre_id)
+            """;
+    private static final String SQL_UPDATE_FILM = """
+            UPDATE films SET name = :name, description = :description, 
+            releasedate = :releasedate, len_min = :len_min, mpa_id = :mpa_id  WHERE id = :id
+            """;
     private static final String SQL_ADD_LIKE = "MERGE INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
     private static final String SQL_REMOVE_LIKE = "DELETE FROM likes WHERE user_id = :userId AND film_id = :filmId";
-    private static final String SQL_FIND_ALL_FILMS = "SELECT f.*, mpa.name as mpa_name FROM films AS f " +
-            " INNER JOIN mpa ON f.mpa_id = mpa.id";
-    private static final String SQL_FIND_FILM_BY_ID = "SELECT f.*, mpa.name as mpa_name, fg.genre_id, g.name AS genre_name\n" +
-            "            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)\n" +
-            "                LEFT JOIN (films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID) ON fg.film_id = f.id\n" +
-            "            WHERE f.id = :id";
-    private static final String SQL_FIND_POPULAR_FILMS = "SELECT f.*, mpa.name AS mpa_name, popular.count_film\n" +
-            "FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID\n)" +
-            "    LEFT OUTER JOIN\n" +
-            "    (SELECT film_id, count(film_id) as count_film\n" +
-            "     FROM LIKES GROUP BY film_id) AS popular\n" +
-            "        ON f.id = popular.film_id\n" +
-            "ORDER BY popular.count_film DESC\n";
+    private static final String SQL_FIND_ALL_FILMS = """
+            SELECT f.*, mpa.name as mpa_name FROM films AS f
+            INNER JOIN mpa ON f.mpa_id = mpa.id
+            """;
+    private static final String SQL_FIND_FILM_BY_ID = """
+            SELECT f.*, mpa.name as mpa_name, fg.genre_id, g.name AS genre_name
+            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)
+                LEFT JOIN (films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID) 
+                ON fg.film_id = f.id
+            WHERE f.id = :id
+            """;
+    private static final String SQL_FIND_POPULAR_FILMS = """
+            SELECT f.*, mpa.name AS mpa_name, popular.count_film
+            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)
+                 LEFT OUTER JOIN
+                 (SELECT film_id, count(film_id) as count_film
+                 FROM LIKES GROUP BY film_id) AS popular
+                 ON f.id = popular.film_id
+            ORDER BY popular.count_film DESC
+            """;
+    private static final String SQL_FIND_COMMON_FILMS_FORMATTER = """
+            SELECT f1.*, common.count_likes AS popular
+            FROM (SELECT f.*, mpa.name as mpa_name FROM films AS f INNER JOIN mpa ON f.mpa_id = mpa.id) AS f1
+            INNER JOIN (SELECT t1.*, t2.count_likes
+                        FROM (SELECT film_id, COUNT(film_id) as count_film
+                              FROM likes WHERE (user_id = %d OR user_id = %d)
+                        GROUP BY film_id) AS t1 -- таблица всех идентификаторов фильмов с лайками обоих пользователей 
+            INNER JOIN (SELECT  film_id, count(film_id) as count_likes
+                        FROM LIKES GROUP BY film_id) AS t2 -- таблица популярности фильмов
+                        ON t1.film_id = t2.film_id
+                        WHERE count_film = 2) AS common -- таблица общих фильмов
+            ON f1.id = common.film_id
+            ORDER BY popular DESC;
+            """;
 
     @Autowired
     private NamedParameterJdbcTemplate jdbc;
@@ -326,4 +352,16 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    /**
+     * Поиск общих фильмов у пользователей
+     *
+     * @param userId1 - идентификатор пользователя
+     * @param userId2 - идентификатор пользователя
+     * @return - список фильмов
+     */
+    @Override
+    public Collection<Film> findCommonFilms(Integer userId1, Integer userId2) {
+        String query = String.format(SQL_FIND_COMMON_FILMS_FORMATTER, userId1, userId2);
+        return findFilmsByQuery(query);
+    }
 }

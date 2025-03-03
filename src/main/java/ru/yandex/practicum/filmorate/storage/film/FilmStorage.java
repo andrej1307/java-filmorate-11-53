@@ -30,5 +30,8 @@ public interface FilmStorage {
     // Чтение числа "лайков" у филььма
     Integer getFilmRank(Integer filmId);
 
+    // Поиск общих фильмов у пользователей
+    Collection<Film> findCommonFilms(Integer userId1, Integer userId2);
+
     void removeAllFilms();
 }
