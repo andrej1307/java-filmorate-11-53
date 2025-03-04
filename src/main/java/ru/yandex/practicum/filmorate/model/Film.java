@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Класс описания фильма.

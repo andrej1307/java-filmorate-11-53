@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,6 +27,15 @@ import java.util.*;
 @Repository
 public class FilmDbStorage implements FilmStorage {
 
+    @Autowired
+    private NamedParameterJdbcTemplate jdbc;
+
+    @Autowired
+    private GenreStorage genreStorage;
+
+    /**
+     * Запросы для заполнения информации о фильме
+     */
     private static final String SQL_INSERT_FILM = """
             INSERT INTO films (name, description, releasedate, len_min, mpa_id)
             VALUES ( :name, :description, :releasedate, :len_min, :mpa_id)
@@ -34,50 +44,6 @@ public class FilmDbStorage implements FilmStorage {
             MERGE INTO films_genres (film_id, genre_id) 
              VALUES (:film_id, :genre_id)
             """;
-    private static final String SQL_UPDATE_FILM = """
-            UPDATE films SET name = :name, description = :description, 
-            releasedate = :releasedate, len_min = :len_min, mpa_id = :mpa_id  WHERE id = :id
-            """;
-    private static final String SQL_ADD_LIKE = "MERGE INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
-    private static final String SQL_REMOVE_LIKE = "DELETE FROM likes WHERE user_id = :userId AND film_id = :filmId";
-    private static final String SQL_FIND_ALL_FILMS = """
-            SELECT f.*, mpa.name as mpa_name FROM films AS f
-            INNER JOIN mpa ON f.mpa_id = mpa.id
-            """;
-    private static final String SQL_FIND_FILM_BY_ID = """
-            SELECT f.*, mpa.name as mpa_name, fg.genre_id, g.name AS genre_name
-            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)
-                LEFT JOIN (films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID) 
-                ON fg.film_id = f.id
-            WHERE f.id = :id
-            """;
-    private static final String SQL_FIND_POPULAR_FILMS = """
-            SELECT f.*, mpa.name AS mpa_name, popular.count_film
-            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)
-                 LEFT OUTER JOIN
-                 (SELECT film_id, count(film_id) as count_film
-                 FROM LIKES GROUP BY film_id) AS popular
-                 ON f.id = popular.film_id
-            ORDER BY popular.count_film DESC
-            """;
-    private static final String SQL_FIND_COMMON_FILMS_FORMATTER = """
-            SELECT f1.*, common.count_likes AS popular
-            FROM (SELECT f.*, mpa.name as mpa_name FROM films AS f INNER JOIN mpa ON f.mpa_id = mpa.id) AS f1
-            INNER JOIN (SELECT t1.*, t2.count_likes
-                        FROM (SELECT film_id, COUNT(film_id) as count_film
-                              FROM likes WHERE (user_id = %d OR user_id = %d)
-                        GROUP BY film_id) AS t1 -- таблица всех идентификаторов фильмов с лайками обоих пользователей 
-            INNER JOIN (SELECT  film_id, count(film_id) as count_likes
-                        FROM LIKES GROUP BY film_id) AS t2 -- таблица популярности фильмов
-                        ON t1.film_id = t2.film_id
-                        WHERE count_film = 2) AS common -- таблица общих фильмов
-            ON f1.id = common.film_id
-            ORDER BY popular DESC;
-            """;
-
-    @Autowired
-    private NamedParameterJdbcTemplate jdbc;
-
     /**
      * Добавление информации о фильме
      *
@@ -110,18 +76,29 @@ public class FilmDbStorage implements FilmStorage {
 
         // добавляем жанры Фильма Если определены
         if (!newFilm.getGenres().isEmpty()) {
-            SqlParameterSource[] batch = newFilm.getGenres().stream()
-                    .map(genre -> new MapSqlParameterSource()
-                            .addValue("film_id", filmId)
-                            .addValue("genre_id", genre.getId()))
-                    .toArray(SqlParameterSource[]::new);
-            jdbc.batchUpdate(SQL_UPDATE_GENRES, batch);
+            try {
+                SqlParameterSource[] batch = newFilm.getGenres().stream()
+                        .map(genre -> new MapSqlParameterSource()
+                                .addValue("film_id", filmId)
+                                .addValue("genre_id", genre.getId()))
+                        .toArray(SqlParameterSource[]::new);
+                jdbc.batchUpdate(SQL_UPDATE_GENRES, batch);
+            } catch (DataAccessException ignored) {
+                throw new InternalServerException("Ошибка при заполнении жанров фильма.");
+            }
         }
 
         return getFilmById(filmId).orElseThrow(() ->
                 new InternalServerException("Ошибка при добавлении фильма."));
     }
 
+    private static final String SQL_FIND_FILM_BY_ID = """
+            SELECT f.*, mpa.name as mpa_name, f.id AS film_id, fg.genre_id, g.name AS genre_name
+            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)
+                LEFT JOIN (films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID)\s
+                ON fg.film_id = f.id
+            WHERE f.id = :id
+            """;
     /**
      * Поиск фильма по идентификатору
      *
@@ -131,34 +108,16 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> getFilmById(Integer id) {
         try {
-            Film film = jdbc.query(SQL_FIND_FILM_BY_ID,
+            Film film = jdbc.queryForObject(SQL_FIND_FILM_BY_ID,
                     new MapSqlParameterSource()
                             .addValue("id", id),
-                    new ResultSetExtractor<Film>() {
-                        @Override
-                        public Film extractData(ResultSet rs) throws SQLException, DataAccessException {
-                            rs.next();
-                            Film filmRs = new FilmRowMapper().mapRow(rs, 1);
-                            Integer mpaId = rs.getInt("mpa_id");
-                            if (mpaId != null) {
-                                Mpa mpa = new Mpa();
-                                mpa.setId(mpaId);
-                                mpa.setName(rs.getString("mpa_name"));
-                                filmRs.setMpa(mpa);
-                            }
-                            do {
-                                Integer genreId = rs.getInt("genre_id");
-                                if (genreId != 0) {
-                                    Genre genre = new Genre();
-                                    genre.setId(genreId);
-                                    genre.setName(rs.getString("genre_name"));
-                                    filmRs.addGenre(genre);
-                                }
-                            } while (rs.next());
-                            return filmRs;
-                        }
-                    }
-            );
+                            new FilmRowMapper());
+
+            Integer filmId = film.getId();
+            Collection<Genre> genres = genreStorage.findGenresByFilmId(filmId);
+            for (Genre genre : genres) {
+                film.addGenre(genre);
+            }
             return Optional.ofNullable(film);
 
         } catch (DataAccessException ignored) {
@@ -166,6 +125,11 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+
+    private static final String SQL_FIND_ALL_FILMS = """
+            SELECT f.*, mpa.name as mpa_name FROM films AS f
+            INNER JOIN mpa ON f.mpa_id = mpa.id
+            """;
     /**
      * Поиск всех фильмов
      *
@@ -176,6 +140,15 @@ public class FilmDbStorage implements FilmStorage {
         return findFilmsByQuery(SQL_FIND_ALL_FILMS);
     }
 
+    private static final String SQL_FIND_POPULAR_FILMS = """
+            SELECT f.*, mpa.name AS mpa_name, popular.count_film
+            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)
+                 LEFT OUTER JOIN
+                 (SELECT film_id, count(film_id) as count_film
+                 FROM LIKES GROUP BY film_id) AS popular
+                 ON f.id = popular.film_id
+            ORDER BY popular.count_film DESC
+            """;
     /**
      * Поиск популярных фильмов
      *
@@ -190,6 +163,10 @@ public class FilmDbStorage implements FilmStorage {
         return findFilmsByQuery(SQL_FIND_POPULAR_FILMS);
     }
 
+    private static final String SQL_UPDATE_FILM = """
+            UPDATE films SET name = :name, description = :description, 
+            releasedate = :releasedate, len_min = :len_min, mpa_id = :mpa_id  WHERE id = :id
+            """;
     /**
      * Обновление сведений о фильме
      *
@@ -229,6 +206,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    private static final String SQL_ADD_LIKE = "MERGE INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
     /**
      * Добавление "лайка" к фильму.
      *
@@ -248,6 +226,7 @@ public class FilmDbStorage implements FilmStorage {
         return getFilmRank(filmId);
     }
 
+    private static final String SQL_REMOVE_LIKE = "DELETE FROM likes WHERE user_id = :userId AND film_id = :filmId";
     /**
      * Удаление "лайка" у фильма.
      *
@@ -313,13 +292,14 @@ public class FilmDbStorage implements FilmStorage {
                             Map<Integer, Film> fMap = new LinkedHashMap<>();
                             while (rs.next()) {
                                 Film film = new FilmRowMapper().mapRow(rs, 1);
-                                Integer mpaId = rs.getInt("mpa_id");
+                            /*    Integer mpaId = rs.getInt("mpa_id");
                                 if (mpaId != 0) {
                                     Mpa mpa = new Mpa();
                                     mpa.setId(mpaId);
                                     mpa.setName(rs.getString("mpa_name"));
                                     film.setMpa(mpa);
                                 }
+                             */
                                 fMap.put(film.getId(), film);
                             }
                             return fMap;
@@ -340,18 +320,30 @@ public class FilmDbStorage implements FilmStorage {
             for (FilmGenre filmGenre : filmsGenres) {
                 int filmId = filmGenre.getFilmId();
                 if (filmsMap.keySet().contains(filmId)) {
-                    Genre genre = new Genre();
-                    genre.setId(filmGenre.getGenreId());
-                    genre.setName(filmGenre.getGenreName());
-                    filmsMap.get(filmId).addGenre(genre);
+                    filmsMap.get(filmId).addGenre(filmGenre.getGenre());
                 }
             }
             return filmsMap.values();
+
         } catch (EmptyResultDataAccessException ignored) {
             return List.of();
         }
     }
 
+    private static final String SQL_FIND_COMMON_FILMS_FORMATTER = """
+            SELECT f1.*, common.count_likes AS popular
+            FROM (SELECT f.*, mpa.name as mpa_name FROM films AS f INNER JOIN mpa ON f.mpa_id = mpa.id) AS f1
+            INNER JOIN (SELECT t1.*, t2.count_likes
+                        FROM (SELECT film_id, COUNT(film_id) as count_film
+                              FROM likes WHERE (user_id = %d OR user_id = %d)
+                        GROUP BY film_id) AS t1 -- таблица всех идентификаторов фильмов с лайками обоих пользователей 
+            INNER JOIN (SELECT  film_id, count(film_id) as count_likes
+                        FROM LIKES GROUP BY film_id) AS t2 -- таблица популярности фильмов
+                        ON t1.film_id = t2.film_id
+                        WHERE count_film = 2) AS common -- таблица общих фильмов
+            ON f1.id = common.film_id
+            ORDER BY popular DESC;
+            """;
     /**
      * Поиск общих фильмов у пользователей
      *
