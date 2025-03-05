@@ -122,7 +122,7 @@ public class FilmServiceImpl implements FilmService {
         films.getFilmById(filmId).orElseThrow(() ->
                 new NotFoundException("Не найден фильм id=" + filmId));
         users.getUserById(userId).orElseThrow(() ->
-                new NotFoundException("Не найден пользователь id=" + userId));
+                new NotFoundException("Не найден пользователь id =" + userId));
 
         Integer likeCount = films.addNewLike(filmId, userId);
 
