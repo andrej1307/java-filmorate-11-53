@@ -51,3 +51,13 @@ CREATE TABLE IF NOT EXISTS likes (
                                      film_id INTEGER NOT NULL REFERENCES films(id),
                                      PRIMARY KEY (user_id, film_id)
 );
+
+-- Создаем таблицу, содержащую ленту событий пользователя
+CREATE TABLE IF NOT EXISTS feed (
+                                     timestamp BIGINT NOT NULL,
+                                     user_id INTEGER NOT NULL,
+                                     event_type VARCHAR NOT NULL,
+                                     operation_type VARCHAR NOT NULL,
+                                     event_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                                     entity_id INTEGER NOT NULL
+);
