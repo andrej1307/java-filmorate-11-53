@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorDbStorage;
 import java.util.List;
 
 @Service
-public class DirectorServiceImpl implements DirectorService{
+public class DirectorServiceImpl implements DirectorService {
 
     @Autowired
     private DirectorDbStorage directorDbStorage;
