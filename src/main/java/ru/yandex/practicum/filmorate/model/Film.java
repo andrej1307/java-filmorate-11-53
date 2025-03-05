@@ -44,6 +44,8 @@ public class Film {
     // жанры фильма
     private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 
+    private LinkedHashSet<Director> directors = new LinkedHashSet<>();
+
     public void addGenre(Genre genre) {
         genres.add(genre);
     }
@@ -54,5 +56,17 @@ public class Film {
 
     public void clearGenres() {
         genres.clear();
+    }
+
+    public void addDirector(Director director) {
+        directors.add(director);
+    }
+
+    public void removeDirector(Director director) {
+        directors.remove(director);
+    }
+
+    public void clearDirectors() {
+        directors.clear();
     }
 }

@@ -28,6 +28,12 @@ CREATE TABLE IF NOT EXISTS MPA (
                                    description VARCHAR(80)
 );
 
+-- Создаем справочник режисёров фильма
+CREATE TABLE IF NOT EXISTS directors (
+                                   id INTEGER NOT NULL GENERATED  BY DEFAULT AS IDENTITY PRIMARY KEY,
+                                   name VARCHAR(40) NOT NULL
+);
+
 -- Создаем таблицу описания фильма
 CREATE TABLE IF NOT EXISTS films (
                                      id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -43,6 +49,13 @@ CREATE TABLE IF NOT EXISTS films_genres (
                                             film_id INTEGER NOT NULL REFERENCES films(id),
                                             genre_id INTEGER NOT NULL REFERENCES genres(id),
                                             PRIMARY KEY (film_id, genre_id)
+);
+
+-- Создаем таблицу описания режисера фильма
+CREATE TABLE IF NOT EXISTS films_directors (
+                                            film_id INTEGER NOT NULL REFERENCES films(id),
+                                            director_id INTEGER NOT NULL REFERENCES directors(id),
+                                            PRIMARY KEY (film_id, director_id)
 );
 
 -- Создаем таблицу "лайков" к фильмам
