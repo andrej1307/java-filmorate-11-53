@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import java.util.List;
 
 @Repository
-public class DirectorDbStorage implements DirectorStorage{
+public class DirectorDbStorage implements DirectorStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -19,6 +19,7 @@ public class DirectorDbStorage implements DirectorStorage{
 
         this.jdbcTemplate = jdbcTemplate;
     }
+
     @Override
     public List<Director> findAll() {
         String sql = "SELECT * FROM directors";
