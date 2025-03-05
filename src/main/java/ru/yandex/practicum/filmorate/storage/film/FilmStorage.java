@@ -10,7 +10,7 @@ public interface FilmStorage {
     Film addNewFilm(Film newFilm);
 
     // чтение фильма по идентификатору
-    Optional<Film> getFilmById(Integer id);
+    Optional<Film> getFilmById(Integer filmId);
 
     // поиск всех фильмов
     Collection<Film> findAllFilms();

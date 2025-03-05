@@ -6,15 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,7 +34,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmDbStorageTest {
     public static final int TEST_FILM_ID = 1;
 
-    private final FilmDbStorage filmDbStorage;
+    @Autowired
+    private final FilmStorage filmDbStorage;
 
     /**
      * Генерация информации о тестовом фильме
@@ -208,4 +209,22 @@ class FilmDbStorageTest {
         assertTrue(films.size() == 0,
                 "При удалении фильмов произошла ошибка.");
     }
+
+    /**
+     * Тестирование поиска общих файлов
+     *
+     * массив "лайков" создается заранее.
+     * Файл первоначальных данных ./src/test/resources/data.sql
+     */
+    @Test
+    void findCommonFilms() {
+
+        ArrayList<Film> films = new ArrayList<>(filmDbStorage.findCommonFilms(2, 3));
+        assertTrue(films.size() > 0,
+                "Общие фильмы не найдены.");
+        assertEquals(4, films.get(0).getId(),
+                "Сортировка общих фильмов по популярности не верна.");
+
+    }
+
 }

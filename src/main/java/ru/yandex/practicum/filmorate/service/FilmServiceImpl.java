@@ -8,10 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Класс реализации запросов к информации о фильмах
@@ -147,5 +144,10 @@ public class FilmServiceImpl implements FilmService {
         response.put("Фильм ", film.getName());
         response.put("лайков", films.getFilmRank(filmId).toString());
         return response;
+    }
+
+    @Override
+    public Collection<Film> findCommonFilms(Integer userId, Integer friendId) {
+        return films.findCommonFilms(userId, friendId);
     }
 }
