@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
@@ -17,9 +19,11 @@ import java.util.Collection;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage users;
+    private final FeedService feeds;
 
-    public UserServiceImpl(UserStorage users) {
+    public UserServiceImpl(UserStorage users, FeedService feeds) {
         this.users = users;
+        this.feeds = feeds;
     }
 
     /**
@@ -125,6 +129,8 @@ public class UserServiceImpl implements UserService {
 
         // Добавление в друзья
         users.addFriend(id1, id2);
+
+        feeds.createFeed(id1, EventType.FRIEND, Operation.ADD, id2);
     }
 
     /**
@@ -142,6 +148,8 @@ public class UserServiceImpl implements UserService {
                 new NotFoundException("Не найден пользователь id=" + id2));
 
         users.breakUpFriends(id1, id2);
+
+        feeds.createFeed(id1, EventType.FRIEND, Operation.REMOVE, id2);
     }
 
     /**
@@ -174,5 +182,4 @@ public class UserServiceImpl implements UserService {
 
         return users.getCommonFriends(id1, id2);
     }
-
 }

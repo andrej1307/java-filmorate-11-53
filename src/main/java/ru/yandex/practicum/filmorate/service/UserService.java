@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.Collection;
 
 public interface UserService {
+
     Collection<User> findAllUsers();
 
     User addNewUser(User user);
@@ -22,5 +23,4 @@ public interface UserService {
     Collection<User> getUserFriends(Integer userId);
 
     Collection<User> getCommonFriends(Integer id1, Integer id2);
-
 }
