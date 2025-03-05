@@ -5,6 +5,8 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -21,10 +23,12 @@ public class FilmServiceImpl implements FilmService {
 
     private final FilmStorage films;
     private final UserStorage users;
+    private final FeedService feeds;
 
-    public FilmServiceImpl(FilmStorage filmStorage, UserStorage users) {
+    public FilmServiceImpl(FilmStorage filmStorage, UserStorage users, FeedService feeds) {
         this.films = filmStorage;
         this.users = users;
+        this.feeds = feeds;
     }
 
     /**
@@ -120,7 +124,11 @@ public class FilmServiceImpl implements FilmService {
         users.getUserById(userId).orElseThrow(() ->
                 new NotFoundException("Не найден пользователь id=" + userId));
 
-        return films.addNewLike(filmId, userId);
+        Integer likeCount = films.addNewLike(filmId, userId);
+
+        feeds.createFeed(userId, EventType.LIKE, Operation.ADD, filmId);
+
+        return likeCount;
     }
 
     @Override
@@ -130,7 +138,11 @@ public class FilmServiceImpl implements FilmService {
         users.getUserById(userId).orElseThrow(() ->
                 new NotFoundException("Не найден пользователь id=" + userId));
 
-        return films.removeLike(filmId, userId);
+        Integer likeCount = films.removeLike(filmId, userId);
+
+        feeds.createFeed(userId, EventType.LIKE, Operation.REMOVE, filmId);
+
+        return likeCount;
     }
 
     @Override
