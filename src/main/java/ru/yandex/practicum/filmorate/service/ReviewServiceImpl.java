@@ -137,7 +137,7 @@ public class ReviewServiceImpl implements ReviewService {
      */
     @Override
     public Review deleteFeedback(Integer reviewId, Integer userId) {
-        if(reviews.containsFeedback(reviewId, userId)){
+        if (reviews.containsFeedback(reviewId, userId)) {
             return reviews.deleteFeedback(reviewId, userId);
         } else {
             throw new NotFoundException("Для отзыва с id=" + reviewId +
