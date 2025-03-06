@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.springframework.boot.context.properties.bind.Name;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 /**
