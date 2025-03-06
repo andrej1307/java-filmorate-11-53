@@ -8,7 +8,7 @@ public interface ReviewService {
 
     Review addReview(Review review);
 
-    String deleteReview(Integer id);
+    void deleteReview(Integer id);
 
     Review updateReview(Review review);
 
@@ -16,7 +16,9 @@ public interface ReviewService {
 
     Collection<Review> getReviews(Integer filmId, Integer count);
 
-    Review addFeedback(Integer reviewId, Integer userId, Boolean isLike);
+    Review addLike(Integer reviewIdId, Integer userId);
+
+    Review addDisLike(Integer reviewIdId, Integer userId);
 
     Review deleteFeedback(Integer reviewId, Integer userId);
 

@@ -12,9 +12,9 @@ public class ReviewRowMapper implements RowMapper<Review> {
     @Override
     public Review mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         Review review = new Review();
-        review.setId(resultSet.getInt("id"));
+        review.setReviewId(resultSet.getInt("review_id"));
         review.setContent(resultSet.getString("content"));
-        review.setPositive(resultSet.getBoolean("is_positive"));
+        review.setIsPositive(resultSet.getBoolean("is_positive"));
         review.setFilmId(resultSet.getInt("film_id"));
         review.setUserId(resultSet.getInt("user_id"));
         review.setUseful(resultSet.getInt("useful"));

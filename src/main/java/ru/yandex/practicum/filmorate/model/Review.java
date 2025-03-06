@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.boot.context.properties.bind.Name;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 /**
@@ -15,7 +16,7 @@ import ru.yandex.practicum.filmorate.validator.Marker;
 public class Review {
 
     @NotNull(groups = {Marker.OnUpdate.class}, message = "id должен быть определен")
-    protected Integer id;
+    protected Integer reviewId;
 
     @Size(min = 0, max = 200, message = "Максимальная длина отзыва - 200 символов.",
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
@@ -25,7 +26,7 @@ public class Review {
 
     @NotNull(message = "Тип отзыва должен быть указан.",
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
-    private boolean isPositive;
+    private Boolean isPositive;
 
     @NotNull(message = "iD фильма должен быть указан.",
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
@@ -36,4 +37,12 @@ public class Review {
     private Integer userId;
 
     private Integer useful;
+
+    public boolean getIsPositive() {
+        return isPositive;
+    }
+
+    public void setIsPositive(boolean isPositive) {
+        this.isPositive = isPositive;
+    }
 }

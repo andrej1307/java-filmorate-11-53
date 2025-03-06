@@ -21,20 +21,16 @@ public class ReviewDbStorage implements ReviewStorage {
 
     private static final String SQL_INSERT_REVIEW = "INSERT INTO reviews (content, is_positive, film_id, user_id, useful) " +
             "VALUES (:content, :is_positive, :film_id, :user_id, 0)";
-    private static final String SQL_DELETE_REVIEW = "DELETE FROM reviews WHERE id = :id";
+    private static final String SQL_DELETE_REVIEW = "DELETE FROM reviews WHERE review_id = :review_id";
     private static final String SQL_UPDATE_REVIEW = "UPDATE reviews SET content = :content, " +
-            "is_positive = :is_positive, film_id = :film_id, user_id = :user_id WHERE id = :id";
-    private static final String SQL_SELECT_REVIEW_BY_ID = "SELECT * FROM reviews WHERE id = :id";
+            "is_positive = :is_positive, film_id = :film_id, user_id = :user_id WHERE review_id = :review_id";
+    private static final String SQL_SELECT_REVIEW_BY_ID = "SELECT * FROM reviews WHERE review_id = :review_id";
     private static final String SQL_SELECT_REVIEWS_BY_FILM_ID = "SELECT * FROM ( " +
             "SELECT *, ROW_NUMBER() OVER (PARTITION BY film_id ORDER BY useful DESC) as rn " +
             "FROM reviews WHERE film_id = IFNULL(:film_id, film_id) ) t " +
-            "WHERE rn <= IFNULL(:count, 10)";
-    private static final String SQL_INSERT_FEEDBACK = "INSERT INTO feedbacks (review_id, user_id, is_like) " +
-            "VALUES (:review_id, :user_id, :is_like) ON CONFLICT (review_id, user_id) DO NOTHING";
-    private static final String SQL_UPDATE_REVIEW_USEFUL_BY_REVIEW_ID = "UPDATE reviews SET useful = useful + :change " +
-            "WHERE id = :id";
+            "WHERE rn <= :count";
     private static final String SQL_DELETE_FEEDBACK = "DELETE FROM feedbacks " +
-            "WHERE review_id = :review_id AND user_id = :user_id";
+            "WHERE reviewid_id = :reviewid_id AND user_id = :user_id";
 
 
     @Autowired
@@ -58,7 +54,7 @@ public class ReviewDbStorage implements ReviewStorage {
             jdbc.update(SQL_INSERT_REVIEW,
                     new MapSqlParameterSource()
                             .addValue("content", review.getContent())
-                            .addValue("is_positive", review.isPositive())
+                            .addValue("is_positive", review.getIsPositive())
                             .addValue("film_id", review.getFilmId())
                             .addValue("user_id", review.getUserId()),
                     generatedKeyHolder
@@ -73,14 +69,14 @@ public class ReviewDbStorage implements ReviewStorage {
     /**
      * Удаляет отзыв из базы данных по его идентификатору.
      *
-     * @param id Идентификатор отзыва, который нужно удалить.
+     * @param reviewId Идентификатор отзыва, который нужно удалить.
      * @throws InternalServerException Если произошла ошибка при удалении отзыва.
      */
     @Override
-    public void deleteReview(Integer id) {
+    public void deleteReview(Integer reviewId) {
         try {
             jdbc.update(SQL_DELETE_REVIEW, new MapSqlParameterSource()
-                    .addValue("id", id));
+                    .addValue("review_id", reviewId));
         } catch (DataAccessException ignored) {
             throw new InternalServerException("Ошибка при удалении отзыва.");
         }
@@ -99,12 +95,13 @@ public class ReviewDbStorage implements ReviewStorage {
         try {
             jdbc.update(SQL_UPDATE_REVIEW,
                     new MapSqlParameterSource()
+                            .addValue("review_id", review.getReviewId())
                             .addValue("content", review.getContent())
-                            .addValue("is_positive", review.isPositive())
+                            .addValue("is_positive", review.getIsPositive())
                             .addValue("film_id", review.getFilmId())
                             .addValue("user_id", review.getUserId())
-                            .addValue("id", review.getId()));
-            return getReviewById(review.getId()).get();
+                            .addValue("useful", review.getUseful()));
+            return getReviewById(review.getReviewId()).get();
         } catch (DataAccessException ignored) {
             throw new InternalServerException("Ошибка при обновлении отзыва.");
         }
@@ -113,17 +110,17 @@ public class ReviewDbStorage implements ReviewStorage {
     /**
      * Возвращает отзыв из базы данных по его идентификатору.
      *
-     * @param id Идентификатор отзыва, который нужно получить.
+     * @param reviewId Идентификатор отзыва, который нужно получить.
      * @return Объект Optional, содержащий отзыв, если он найден, или пустой Optional, если отзыв не найден.
      * @throws InternalServerException Если произошла ошибка при получении отзыва.
      */
     @Override
-    public Optional<Review> getReviewById(Integer id) {
+    public Optional<Review> getReviewById(Integer reviewId) {
         try {
             return Optional.ofNullable(jdbc.queryForObject(SQL_SELECT_REVIEW_BY_ID,
-                    new MapSqlParameterSource().addValue("id", id), reviewRowMapper));
+                    new MapSqlParameterSource().addValue("review_id", reviewId), reviewRowMapper));
         } catch (DataAccessException ignored) {
-            throw new InternalServerException("Ошибка при получении отзыва.");
+            return Optional.empty();
         }
     }
 
@@ -147,73 +144,125 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     /**
-     * Добавляет Like/Dislike к отзыву.
+     * Добавляет Like к отзыву.
      *
-     * @param reviewId Идентификатор отзыва, к которому нужно добавить Like/Dislike.
-     * @param userId   Идентификатор пользователя, который добавляет Like/Dislike.
-     * @param isLike   Значение true, если Like, false, если Dislike.
+     * @param reviewIdId Идентификатор отзыва, к которому нужно добавить Like.
+     * @param userId     Идентификатор пользователя, который добавляет Like.
      */
     @Override
-    public Review addFeedback(Integer reviewId, Integer userId, Boolean isLike) {
+    public Review addLike(Integer reviewIdId, Integer userId) {
         try {
-            jdbc.update(SQL_INSERT_FEEDBACK,
-                    new MapSqlParameterSource()
-                            .addValue("review_id", reviewId)
-                            .addValue("user_id", userId)
-                            .addValue("is_like", isLike));
-            jdbc.update(SQL_UPDATE_REVIEW_USEFUL_BY_REVIEW_ID,
-                    new MapSqlParameterSource()
-                            .addValue("change", isLike ? 1 : -1)
-                            .addValue("id", reviewId));
-        } catch (DataAccessException ignored) {
-            throw new InternalServerException("Ошибка при добавлении Like/Dislike для отзыва.");
+            if (!containsFeedback(reviewIdId, userId)) {
+                jdbc.update("INSERT INTO feedbacks (reviewid_id, user_id, is_like) " +
+                                "VALUES (:reviewid_id, :user_id, :is_like)",
+                        new MapSqlParameterSource()
+                                .addValue("reviewid_id", reviewIdId)
+                                .addValue("user_id", userId)
+                                .addValue("is_like", true));
+                jdbc.update("UPDATE reviews SET useful=useful+1 WHERE review_id = :review_id",
+                        new MapSqlParameterSource()
+                                .addValue("review_id", reviewIdId));
+            } else {
+                jdbc.update("UPDATE feedbacks SET is_like=:is_like WHERE reviewid_id=:reviewid_id AND user_id=:user_id",
+                        new MapSqlParameterSource()
+                                .addValue("reviewid_id", reviewIdId)
+                                .addValue("user_id", userId)
+                                .addValue("is_like", true));
+                jdbc.update("UPDATE reviews SET useful=useful+2 WHERE review_id = :review_id",
+                        new MapSqlParameterSource()
+                                .addValue("review_id", reviewIdId));
+            }
+        } catch (
+                DataAccessException e) {
+            throw new InternalServerException("Ошибка при добавлении Like для отзыва.");
         }
-        return getReviewById(reviewId).get();
+        return getReviewById(reviewIdId).get();
+    }
+
+    /**
+     * Добавляет Dislike к отзыву.
+     *
+     * @param reviewIdId Идентификатор отзыва, к которому нужно добавить Dislike.
+     * @param userId     Идентификатор пользователя, который добавляет Dislike.
+     */
+    @Override
+    public Review addDisLike(Integer reviewIdId, Integer userId) {
+        try {
+            if (!containsFeedback(reviewIdId, userId)) {
+                jdbc.update("INSERT INTO feedbacks (reviewid_id, user_id, is_like) " +
+                                "VALUES (:reviewid_id, :user_id, :is_like)",
+                        new MapSqlParameterSource()
+                                .addValue("reviewid_id", reviewIdId)
+                                .addValue("user_id", userId)
+                                .addValue("is_like", false));
+                jdbc.update("UPDATE reviews SET useful=useful-1 WHERE review_id = :review_id",
+                        new MapSqlParameterSource()
+                                .addValue("review_id", reviewIdId));
+            } else {
+                jdbc.update("UPDATE feedbacks SET is_like=:is_like WHERE reviewid_id=:reviewid_id AND user_id=:user_id",
+                        new MapSqlParameterSource()
+                                .addValue("reviewid_id", reviewIdId)
+                                .addValue("user_id", userId)
+                                .addValue("is_like", false));
+                jdbc.update("UPDATE reviews SET useful=useful-2 WHERE review_id = :review_id",
+                        new MapSqlParameterSource()
+                                .addValue("review_id", reviewIdId));
+            }
+        } catch (
+                DataAccessException e) {
+            throw new InternalServerException("Ошибка при добавлении Like для отзыва.");
+        }
+        return getReviewById(reviewIdId).get();
     }
 
     /**
      * Удаляет Like/Dislike из отзыва.
      *
-     * @param reviewId Идентификатор отзыва, из которого нужно удалить Like/Dislike.
-     * @param userId   Идентификатор пользователя, который удаляет Like/Dislike.
+     * @param reviewIdId Идентификатор отзыва, из которого нужно удалить Like/Dislike.
+     * @param userId     Идентификатор пользователя, который удаляет Like/Dislike.
      */
     @Override
-    public Review deleteFeedback(Integer reviewId, Integer userId) {
+    public Review deleteFeedback(Integer reviewIdId, Integer userId) {
         try {
             boolean change = Boolean.TRUE.equals(jdbc.queryForObject(
-                    "SELECT is_like FROM feedbacks WHERE review_id = :review_id AND user_id = :user_id",
+                    "SELECT is_like FROM feedbacks WHERE reviewid_id = :reviewid_id AND user_id = :user_id",
                     new MapSqlParameterSource()
-                            .addValue("review_id", reviewId)
+                            .addValue("reviewid_id", reviewIdId)
                             .addValue("user_id", userId),
                     Boolean.class));
             jdbc.update(SQL_DELETE_FEEDBACK,
                     new MapSqlParameterSource()
-                            .addValue("review_id", reviewId)
+                            .addValue("reviewid_id", reviewIdId)
                             .addValue("user_id", userId));
-            jdbc.update(SQL_UPDATE_REVIEW_USEFUL_BY_REVIEW_ID,
-                    new MapSqlParameterSource()
-                            .addValue("change", change ? -1 : 1)
-                            .addValue("id", reviewId));
+            if (!change) {
+                jdbc.update("UPDATE reviews SET useful=useful+1 WHERE review_id = :review_id",
+                        new MapSqlParameterSource()
+                                .addValue("review_id", reviewIdId));
+            } else {
+                jdbc.update("UPDATE reviews SET useful=useful-1 WHERE review_id = :review_id",
+                        new MapSqlParameterSource()
+                                .addValue("review_id", reviewIdId));
+            }
         } catch (DataAccessException ignored) {
             throw new InternalServerException("Ошибка при удалении Like/Dislike для отзыва.");
         }
-        return getReviewById(reviewId).get();
+        return getReviewById(reviewIdId).get();
     }
 
     /**
      * Проверяет, существует ли Like/Dislike с заданным идентификатором отзыва и пользователем.
      *
-     * @param reviewId Идентификатор отзыва, который нужно проверить.
-     * @param userId   Идентификатор пользователя, который нужно проверить.
+     * @param reviewIdId Идентификатор отзыва, который нужно проверить.
+     * @param userId     Идентификатор пользователя, который нужно проверить.
      * @return true, если Like/Dislike существует, false в противном случае.
      */
     @Override
-    public boolean containsFeedback(Integer reviewId, Integer userId) {
+    public boolean containsFeedback(Integer reviewIdId, Integer userId) {
         try {
-            return jdbc.queryForObject("SELECT review_id FROM feedbacks WHERE review_id = :review_id AND user_id = :user_id",
+            return !jdbc.queryForList("SELECT reviewid_id FROM feedbacks WHERE reviewid_id = :reviewid_id AND user_id = :user_id",
                     new MapSqlParameterSource()
-                            .addValue("review_id", reviewId)
-                            .addValue("user_id", userId), Integer.class) != null;
+                            .addValue("reviewid_id", reviewIdId)
+                            .addValue("user_id", userId), Integer.class).isEmpty();
         } catch (DataAccessException ignored) {
             throw new InternalServerException("Ошибка при работе с базой данных.");
         }

@@ -7,19 +7,21 @@ import java.util.Optional;
 
 public interface ReviewStorage {
 
-    Review addReview(Review review);
+    Review addReview(Review reviewId);
 
-    void deleteReview(Integer id);
+    void deleteReview(Integer reviewId);
 
     Review updateReview(Review review);
 
-    Optional<Review> getReviewById(Integer id);
+    Optional<Review> getReviewById(Integer reviewId);
 
     Collection<Review> getReviews(Integer filmId, Integer count);
 
-    Review addFeedback(Integer reviewId, Integer userId, Boolean isLike);
+    Review addLike(Integer reviewIdId, Integer userId);
 
-    Review deleteFeedback(Integer reviewId, Integer userId);
+    Review addDisLike(Integer reviewIdId, Integer userId);
 
-    boolean containsFeedback(Integer reviewId, Integer userId);
+    Review deleteFeedback(Integer reviewIdId, Integer userId);
+
+    boolean containsFeedback(Integer reviewIdId, Integer userId);
 }

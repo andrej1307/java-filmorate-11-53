@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,47 +33,47 @@ public class ReviewController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public String deleteReview(@PathVariable("id") Integer reviewId) {
-        log.debug("Удаляем отзыв id={}.", reviewId);
-        return reviewService.deleteReview(reviewId);
+    public void deleteReview(@PathVariable("id") @Pattern(regexp = "\\d+") String reviewIdStr) {
+        log.debug("Удаляем отзыв id={}.", Integer.parseInt(reviewIdStr));
+        reviewService.deleteReview(Integer.parseInt(reviewIdStr));
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public Review updateReview(@Validated(Marker.OnUpdate.class) @RequestBody Review updReview) {
-        log.info("Обновляем информацию об отзыве id={} : {}", updReview.getId(), updReview);
+        log.info("Обновляем информацию об отзыве id={} : {}", updReview.getReviewId(), updReview);
         return reviewService.updateReview(updReview);
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Review findReview(@PathVariable("id") Integer reviewId) {
-        log.info("Ищем отзыв id={}.", reviewId);
-        return reviewService.getReviewById(reviewId);
+    public Review findReview(@PathVariable("id") @Pattern(regexp = "\\d+") String reviewIdStr) {
+        log.info("Ищем отзыв id={}.", Integer.parseInt(reviewIdStr));
+        return reviewService.getReviewById(Integer.parseInt(reviewIdStr));
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Collection<Review> getReviews(@RequestParam(required = false) Integer filmId,
-                                         @RequestParam(required = false) Integer count) {
+                                         @RequestParam(defaultValue = "10") Integer count) {
         log.info("Получаем список {} отзывов для фильма с id = {}.", count, filmId);
         return reviewService.getReviews(filmId, count);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     public Review addLike(@PathVariable("id") Integer reviewId,
                           @PathVariable("userId") Integer userId) {
         log.debug("Добавляем \"лайк\" отзыву {}, от пользователя {}.", reviewId, userId);
-        return reviewService.addFeedback(reviewId, userId, true);
+        return reviewService.addLike(reviewId, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     public Review addDisLike(@PathVariable("id") Integer reviewId,
                              @PathVariable("userId") Integer userId) {
         log.debug("Добавляем \"дизлайк\" отзыву {}, от пользователя {}.", reviewId, userId);
-        return reviewService.addFeedback(reviewId, userId, false);
+        return reviewService.addDisLike(reviewId, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
@@ -89,5 +90,8 @@ public class ReviewController {
                                 @PathVariable("userId") Integer userId) {
         log.debug("Удаляем \"дизлайк\" у отзыва {}, от пользователя {}.", reviewId, userId);
         return reviewService.deleteFeedback(reviewId, userId);
+    }
+
+    private static void validateReviewId(@Pattern(regexp = "\\d+") String reviewId) {
     }
 }

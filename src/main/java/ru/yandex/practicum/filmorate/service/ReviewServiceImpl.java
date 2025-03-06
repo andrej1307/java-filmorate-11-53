@@ -48,7 +48,7 @@ public class ReviewServiceImpl implements ReviewService {
      * @throws NotFoundException Если отзыв с указанным id не найден.
      */
     @Override
-    public String deleteReview(Integer id) {
+    public void deleteReview(Integer id) {
         if (reviews.getReviewById(id).isEmpty()) {
             throw new NotFoundException("Не найден отзыв с id=" + id);
         }
@@ -56,7 +56,6 @@ public class ReviewServiceImpl implements ReviewService {
 
         // место для ленты событий - id
 
-        return "Отзыв с id=" + id + " успешно удален";
     }
 
     /**
@@ -68,8 +67,8 @@ public class ReviewServiceImpl implements ReviewService {
      */
     @Override
     public Review updateReview(Review review) {
-        if (reviews.getReviewById(review.getId()).isEmpty()) {
-            throw new NotFoundException("Не найден отзыв с id=" + review.getId());
+        if (reviews.getReviewById(review.getReviewId()).isEmpty()) {
+            throw new NotFoundException("Не найден отзыв с id=" + review.getReviewId());
         }
         if (films.getFilmById(review.getFilmId()).isEmpty()) {
             throw new NotFoundException("Не найден фильм с id=" + review.getFilmId());
@@ -110,22 +109,39 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
-     * Добавляет оценку отзыва фильма пользователем.
+     * Добавляет Like к отзыву.
      *
      * @param reviewId id отзыва для добавления оценки.
      * @param userId id пользователя, который оценивает фильм.
-     * @param isLike true, если пользователь поставил лайк, false - если дизлайк.
      * @throws NotFoundException Если отзыв с указанным id не найден или пользователь с указанным id не найден.
      */
     @Override
-    public Review addFeedback(Integer reviewId, Integer userId, Boolean isLike) {
+    public Review addLike(Integer reviewId, Integer userId) {
         if (reviews.getReviewById(reviewId).isEmpty()) {
             throw new NotFoundException("Не найден отзыв с id=" + reviewId);
         }
         if (users.getUserById(userId).isEmpty()) {
             throw new NotFoundException("Не найден пользователь с id=" + userId);
         }
-        return reviews.addFeedback(reviewId, userId, isLike);
+        return reviews.addLike(reviewId, userId);
+    }
+
+    /**
+     * Добавляет Dislike к отзыву.
+     *
+     * @param reviewId id отзыва для добавления оценки.
+     * @param userId   id пользователя, который оценивает фильм.
+     * @throws NotFoundException Если отзыв с указанным id не найден или пользователь с указанным id не найден.
+     */
+    @Override
+    public Review addDisLike(Integer reviewId, Integer userId) {
+        if (reviews.getReviewById(reviewId).isEmpty()) {
+            throw new NotFoundException("Не найден отзыв с id=" + reviewId);
+        }
+        if (users.getUserById(userId).isEmpty()) {
+            throw new NotFoundException("Не найден пользователь с id=" + userId);
+        }
+        return reviews.addDisLike(reviewId, userId);
     }
 
     /**
