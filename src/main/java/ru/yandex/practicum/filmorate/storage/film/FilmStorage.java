@@ -31,4 +31,6 @@ public interface FilmStorage {
     Integer getFilmRank(Integer filmId);
 
     void removeAllFilms();
+
+    public Collection<Film> getMostPopularFilmsByGenreByYear(Integer year, Integer genreId, Integer limit);
 }
