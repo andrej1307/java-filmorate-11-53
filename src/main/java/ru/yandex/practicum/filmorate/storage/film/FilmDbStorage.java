@@ -339,7 +339,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getMostPopularFilmsByGenreByYear(Integer year, Integer genreId, Integer limit) {
 
-        String SQL_SELECT_MOST_POPULAR_FILMS_BY_GENRE_BY_YEAR =
+        String sqlSelectMostPopularFilmsByGenreByYear =
                 "SELECT f.*, COUNT(l.user_id) AS likes " +
                         "FROM films f " +
                         "JOIN films_genres fg ON f.id = fg.film_id " +
@@ -351,7 +351,7 @@ public class FilmDbStorage implements FilmStorage {
                         "LIMIT COALESCE(:limit, 1000)";
 
         try {
-            return jdbc.query(SQL_SELECT_MOST_POPULAR_FILMS_BY_GENRE_BY_YEAR,
+            return jdbc.query(sqlSelectMostPopularFilmsByGenreByYear,
                     new MapSqlParameterSource()
                             .addValue("genreId", genreId)
                             .addValue("year", year)
