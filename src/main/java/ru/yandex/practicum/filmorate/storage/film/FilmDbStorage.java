@@ -6,17 +6,14 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.mapper.FilmGenreRowMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.sql.ResultSet;
@@ -26,29 +23,21 @@ import java.util.*;
 
 @Repository
 public class FilmDbStorage implements FilmStorage {
-
-    // @Autowired
-    private NamedParameterJdbcTemplate jdbc;
-
-    // @Autowired
+    private final NamedParameterJdbcTemplate jdbc;
     private final GenreStorage genreStorage;
 
-    public FilmDbStorage(@Autowired NamedParameterJdbcTemplate jdbc, @Autowired GenreStorage genreStorage) {
+    public FilmDbStorage(@Autowired NamedParameterJdbcTemplate jdbc,
+                         @Autowired GenreStorage genreStorage) {
         this.jdbc = jdbc;
         this.genreStorage = genreStorage;
     }
 
-    /**
-     * Запросы для заполнения информации о фильме
-     */
+    // Запрос для заполнения информации о фильме
     private static final String SQL_INSERT_FILM = """
             INSERT INTO films (name, description, releasedate, len_min, mpa_id)
             VALUES ( :name, :description, :releasedate, :len_min, :mpa_id)
             """;
-    private static final String SQL_UPDATE_GENRES = """
-            MERGE INTO films_genres (film_id, genre_id) 
-             VALUES (:film_id, :genre_id)
-            """;
+
     /**
      * Добавление информации о фильме
      *
@@ -88,10 +77,11 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private static final String SQL_FIND_FILM_BY_ID = """
-        SELECT f.*, mpa.name as mpa_name
-        FROM films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID
-        WHERE f.id = :id;           
-    """;
+                SELECT f.*, mpa.name as mpa_name
+                FROM films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID
+                WHERE f.id = :id;           
+            """;
+
     /**
      * Поиск фильма по идентификатору
      *
@@ -121,6 +111,7 @@ public class FilmDbStorage implements FilmStorage {
             SELECT f.*, mpa.name as mpa_name FROM films AS f
             INNER JOIN mpa ON f.mpa_id = mpa.id
             """;
+
     /**
      * Поиск всех фильмов
      *
@@ -140,6 +131,7 @@ public class FilmDbStorage implements FilmStorage {
                  ON f.id = popular.film_id
             ORDER BY popular.count_film DESC
             """;
+
     /**
      * Поиск популярных фильмов
      *
@@ -158,6 +150,7 @@ public class FilmDbStorage implements FilmStorage {
             UPDATE films SET name = :name, description = :description, 
             releasedate = :releasedate, len_min = :len_min, mpa_id = :mpa_id  WHERE id = :id
             """;
+
     /**
      * Обновление сведений о фильме
      *
@@ -185,6 +178,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private static final String SQL_ADD_LIKE = "MERGE INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
+
     /**
      * Добавление "лайка" к фильму.
      *
@@ -205,6 +199,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private static final String SQL_REMOVE_LIKE = "DELETE FROM likes WHERE user_id = :userId AND film_id = :filmId";
+
     /**
      * Удаление "лайка" у фильма.
      *
@@ -312,6 +307,7 @@ public class FilmDbStorage implements FilmStorage {
             ON f1.id = common.film_id
             ORDER BY popular DESC;
             """;
+
     /**
      * Поиск общих фильмов у пользователей
      *
@@ -324,4 +320,5 @@ public class FilmDbStorage implements FilmStorage {
         String query = String.format(SQL_FIND_COMMON_FILMS_FORMATTER, userId1, userId2);
         return findFilmsByQuery(query);
     }
+
 }

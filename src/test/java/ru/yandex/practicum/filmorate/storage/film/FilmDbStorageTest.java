@@ -6,12 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
-import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -30,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({FilmDbStorage.class})
+@Import({FilmDbStorage.class, GenreDbStorage.class})
 class FilmDbStorageTest {
     public static final int TEST_FILM_ID = 1;
 
@@ -115,27 +113,18 @@ class FilmDbStorageTest {
 
     /**
      * Тестирование расчета популярности фильмов
+     * <p>
+     * массив "лайков" создается заранее.
+     * Файл первоначальных данных ./src/test/resources/data.sql
      */
     @Test
     void findPopularFilms() {
-        // задаем "лайки" к фильмам
-        filmDbStorage.addNewLike(1, 1);
-        filmDbStorage.addNewLike(2, 1);
-        filmDbStorage.addNewLike(2, 2);
-        filmDbStorage.addNewLike(3, 1);
-        filmDbStorage.addNewLike(3, 2);
-        filmDbStorage.addNewLike(3, 3);
-        filmDbStorage.addNewLike(3, 4);
-        filmDbStorage.addNewLike(4, 4);
-        filmDbStorage.addNewLike(4, 2);
-        filmDbStorage.addNewLike(4, 3);
-
         Collection<Film> films = filmDbStorage.findPopularFilms(2);
         List<Film> popular = new LinkedList<>(films);
-        assertEquals(popular.get(0), filmDbStorage.getFilmById(3).get(),
+        assertEquals(popular.get(0), filmDbStorage.getFilmById(4).get(),
                 "Самый популярный фильм расчитан неверно.");
 
-        assertEquals(popular.get(1), filmDbStorage.getFilmById(4).get(),
+        assertEquals(popular.get(1), filmDbStorage.getFilmById(2).get(),
                 "Второй по популярности фильм расчитан неверно.");
     }
 
@@ -212,7 +201,7 @@ class FilmDbStorageTest {
 
     /**
      * Тестирование поиска общих файлов
-     *
+     * <p>
      * массив "лайков" создается заранее.
      * Файл первоначальных данных ./src/test/resources/data.sql
      */
