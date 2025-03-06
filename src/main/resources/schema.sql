@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS likes (
 -- Создаем таблицу, содержащую ленту событий пользователя
 CREATE TABLE IF NOT EXISTS feed (
                                      timestamp BIGINT NOT NULL,
-                                     user_id INTEGER NOT NULL,
+                                     user_id INTEGER NOT NULL REFERENCES users(id),
                                      event_type VARCHAR NOT NULL,
                                      operation_type VARCHAR NOT NULL,
                                      event_id INTEGER PRIMARY KEY AUTO_INCREMENT,

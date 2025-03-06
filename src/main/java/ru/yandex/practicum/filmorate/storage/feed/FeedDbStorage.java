@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FeedDbStorage implements FeedStorage {
 
-    private static final String SELECT_FEEDS_QUERY = "SELECT * FROM feed WHERE user_id = :user_id";
+    private static final String SELECT_FEEDS_QUERY = "SELECT * FROM feed WHERE user_id = :user_id ORDER BY timestamp";
     private static final String INSERT_FEED_QUERY = "INSERT INTO feed (timestamp, user_id, event_type, operation_type, " +
             "entity_id) VALUES (:timestamp, :user_id, :event_type, :operation_type, :entity_id)";
 
