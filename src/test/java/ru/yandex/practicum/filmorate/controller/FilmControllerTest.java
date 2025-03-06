@@ -234,7 +234,7 @@ class FilmControllerTest {
                 .andExpect(status().isOk())      // ожидается код статус 200
                 .andReturn();
 
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!" +result.getResponse().getContentAsString());
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + result.getResponse().getContentAsString());
 
         List<Film> filmsPopular = gson.fromJson(result.getResponse().getContentAsString(),
                 new FilmListTypeToken().getType());
