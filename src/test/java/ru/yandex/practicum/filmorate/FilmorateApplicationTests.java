@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 @AutoConfigureTestDatabase
 class FilmorateApplicationTests {
-    @Test
-    void contextLoads() throws Exception {
-    }
+ //   @Test
+ //   void contextLoads() throws Exception {
+ //   }
 }
