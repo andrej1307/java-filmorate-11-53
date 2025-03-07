@@ -51,8 +51,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Autowired
     private NamedParameterJdbcTemplate jdbc;
-    @Autowired
-    private FilmRowMapper filmRowMapper;
 
     /**
      * Добавление информации о фильме
@@ -327,4 +325,5 @@ public class FilmDbStorage implements FilmStorage {
             return List.of();
         }
     }
+
 }
