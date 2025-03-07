@@ -79,7 +79,7 @@ public class FilmDbStorage implements FilmStorage {
     private static final String SQL_FIND_FILM_BY_ID = """
                 SELECT f.*, mpa.name as mpa_name
                 FROM films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID
-                WHERE f.id = :id;           
+                WHERE f.id = :id;
             """;
 
     /**
@@ -147,7 +147,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private static final String SQL_UPDATE_FILM = """
-            UPDATE films SET name = :name, description = :description, 
+            UPDATE films SET name = :name, description = :description,
             releasedate = :releasedate, len_min = :len_min, mpa_id = :mpa_id  WHERE id = :id
             """;
 
@@ -299,7 +299,7 @@ public class FilmDbStorage implements FilmStorage {
             INNER JOIN (SELECT t1.*, t2.count_likes
                         FROM (SELECT film_id, COUNT(film_id) as count_film
                               FROM likes WHERE (user_id = %d OR user_id = %d)
-                        GROUP BY film_id) AS t1 -- таблица всех идентификаторов фильмов с лайками обоих пользователей 
+                        GROUP BY film_id) AS t1 -- таблица всех идентификаторов фильмов с лайками обоих пользователей
             INNER JOIN (SELECT  film_id, count(film_id) as count_likes
                         FROM LIKES GROUP BY film_id) AS t2 -- таблица популярности фильмов
                         ON t1.film_id = t2.film_id
