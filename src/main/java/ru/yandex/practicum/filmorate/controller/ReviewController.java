@@ -91,7 +91,4 @@ public class ReviewController {
         log.debug("Удаляем \"дизлайк\" у отзыва {}, от пользователя {}.", reviewId, userId);
         return reviewService.deleteFeedback(reviewId, userId);
     }
-
-    private static void validateReviewId(@Pattern(regexp = "\\d+") String reviewId) {
-    }
 }
