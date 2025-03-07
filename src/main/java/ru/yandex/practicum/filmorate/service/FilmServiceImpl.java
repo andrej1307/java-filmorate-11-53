@@ -148,4 +148,9 @@ public class FilmServiceImpl implements FilmService {
         response.put("лайков", films.getFilmRank(filmId).toString());
         return response;
     }
+
+    @Override
+    public Collection<Film> getMostPopularFilms(Integer year, Integer genreId, Integer limit) {
+        return films.getMostPopularFilmsByGenreByYear(year, genreId, limit);
+    }
 }

@@ -24,4 +24,6 @@ public interface FilmService {
     Collection<Film> findPopularFilms(int count);
 
     Map<String, String> getFilmRank(Integer filmId);
+
+    public Collection<Film> getMostPopularFilms(Integer year, Integer genreId, Integer limit);
 }

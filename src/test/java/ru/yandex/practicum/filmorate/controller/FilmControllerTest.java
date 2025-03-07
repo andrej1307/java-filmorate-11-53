@@ -230,11 +230,13 @@ class FilmControllerTest {
         mvc.perform(put("/films/4/like/3").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
         mvc.perform(put("/films/4/like/3").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
-        MvcResult result = mvc.perform(get("/films/popular?count=2"))
+        MvcResult result = mvc.perform(get("/films/popul?count=2"))
                 .andExpect(status().isOk())      // ожидается код статус 200
                 .andReturn();
+
         List<Film> filmsPopular = gson.fromJson(result.getResponse().getContentAsString(),
                 new FilmListTypeToken().getType());
+
         assertTrue(filmsPopular.size() == 2,
                 "Число популярных фильмов не соответствует ожидаемому");
     }
