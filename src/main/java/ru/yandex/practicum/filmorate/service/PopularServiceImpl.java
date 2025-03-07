@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +21,14 @@ public class PopularServiceImpl implements PopularService {
     @Override
     public List<Film> getPopular(Integer year, Integer genreId, Integer count) {
 
-        List<Film> listFilms = films.findAllFilms().stream()
+        Collection<Film> draftFilms = films.findAllFilms();
+        Collection<Film> genreFilms = new ArrayList<>();
+        draftFilms.forEach(film -> {
+              genreFilms.add(films.getFilmById(film.getId()).get());
+        });
+
+
+        List<Film> listFilms = genreFilms.stream()
                 .filter(film ->
                         Optional.ofNullable(year).map(y ->
                                 film.getReleaseDate().getYear() == y).orElse(true)
