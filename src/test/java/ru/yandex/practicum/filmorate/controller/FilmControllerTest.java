@@ -233,10 +233,8 @@ class FilmControllerTest {
         MvcResult result = mvc.perform(get("/films/popular?count=2"))
                 .andExpect(status().isOk())      // ожидается код статус 200
                 .andReturn();
-
         List<Film> filmsPopular = gson.fromJson(result.getResponse().getContentAsString(),
                 new FilmListTypeToken().getType());
-
         assertTrue(filmsPopular.size() == 2,
                 "Число популярных фильмов не соответствует ожидаемому");
     }
