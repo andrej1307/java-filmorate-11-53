@@ -32,5 +32,4 @@ public interface FilmStorage {
 
     void removeAllFilms();
 
-    public Collection<Film> getMostPopularFilmsByGenreByYear(Integer year, Integer genreId, Integer limit);
 }

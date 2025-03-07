@@ -149,8 +149,4 @@ public class FilmServiceImpl implements FilmService {
         return response;
     }
 
-    @Override
-    public Collection<Film> getMostPopularFilms(Integer year, Integer genreId, Integer limit) {
-        return films.getMostPopularFilmsByGenreByYear(year, genreId, limit);
-    }
 }

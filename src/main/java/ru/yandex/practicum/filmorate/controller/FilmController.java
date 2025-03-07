@@ -53,7 +53,7 @@ public class FilmController {
     }
 
 
-    @GetMapping("/popul")
+    @GetMapping("/popular")
     public Collection<Film> findPopularFilms(@RequestParam(defaultValue = "10") @Min(1) int count) {
         log.info("Ищем популярные {} фильмов.", count);
         return service.findPopularFilms(count);
@@ -118,12 +118,4 @@ public class FilmController {
         return service.onDelete();
     }
 
-    @GetMapping("/popular")
-    @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> getReviews(@RequestParam(required = false) Integer year,
-                                       @RequestParam(required = false) Integer genreId,
-                                       @RequestParam(required = false, defaultValue = "1111111") Integer count) {
-        log.info("Получаем список самых популярных фильмов за {} года, жанра {} и лимитом{}", year, genreId, count);
-        return service.getMostPopularFilms(year, genreId, count);
-    }
 }

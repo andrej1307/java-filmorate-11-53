@@ -327,36 +327,4 @@ public class FilmDbStorage implements FilmStorage {
             return List.of();
         }
     }
-
-    /**
-     * Метод поиска фильмов заполнения их соответствующими жанрами
-     *
-     * @param year - год премьеры фильма
-     * @param genreId - идентификатор жанра
-     * @param limit - количество фильмов для вывода (если NULL - то 1000)
-     * @return - коллекция фильмов.
-     */
-    @Override
-    public Collection<Film> getMostPopularFilmsByGenreByYear(Integer year, Integer genreId, Integer limit) {
-
-        String sqlSelectMostPopularFilmsByGenreByYear =
-                "SELECT f.*, COUNT(l.user_id) AS likes " +
-                        "FROM films f " +
-                        "JOIN films_genres fg ON f.id = fg.film_id " +
-                        "JOIN likes l ON f.id = l.film_id " +
-                        "WHERE (fg.genre_id = :genreId OR :genreId IS NULL) " +
-                        "AND (EXTRACT(YEAR FROM f.releaseDate) = :year OR :year IS NULL) " +
-                        "GROUP BY f.id ORDER BY likes DESC  LIMIT :limit";
-
-        try {
-            return jdbc.query(sqlSelectMostPopularFilmsByGenreByYear,
-                    new MapSqlParameterSource()
-                            .addValue("genreId", genreId)
-                            .addValue("year", year)
-                            .addValue("limit", limit), filmRowMapper);
-
-        } catch (DataAccessException ignored) {
-            throw new InternalServerException("Ошибка при получении списка отзывов для фильма.");
-        }
-    }
 }
