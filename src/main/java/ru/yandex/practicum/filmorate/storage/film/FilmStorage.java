@@ -31,5 +31,4 @@ public interface FilmStorage {
     Integer getFilmRank(Integer filmId);
 
     void removeAllFilms();
-
 }

@@ -24,5 +24,4 @@ public interface FilmService {
     Collection<Film> findPopularFilms(int count);
 
     Map<String, String> getFilmRank(Integer filmId);
-
 }

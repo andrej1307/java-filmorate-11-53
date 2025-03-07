@@ -8,6 +8,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.PopularService;
+import ru.yandex.practicum.filmorate.service.PopularServiceImpl;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.util.Collection;
@@ -22,6 +24,8 @@ import java.util.Map;
 public class FilmController {
 
     private final FilmService service;
+    @Autowired
+    private PopularService popularService;
 
     @Autowired
     public FilmController(FilmService service) {
@@ -52,12 +56,24 @@ public class FilmController {
         return service.getFilmById(id);
     }
 
-
+    /**
     @GetMapping("/popular")
     public Collection<Film> findPopularFilms(@RequestParam(defaultValue = "10") @Min(1) int count) {
         log.info("Ищем популярные {} фильмов.", count);
         return service.findPopularFilms(count);
     }
+     */
+
+    @GetMapping("/popular")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> getReviews(@RequestParam(required = false) Integer year,
+                                       @RequestParam(required = false) Integer genreId,
+                                       @RequestParam(required = false) Integer count) {
+        log.info("Получаем список самых популярных фильмов за {} года, жанра {} и лимитом{}", year, genreId, count);
+        return popularService.getPopular(year, genreId, count);
+    }
+
+
 
     /**
      * Метод добавления нового фильма.

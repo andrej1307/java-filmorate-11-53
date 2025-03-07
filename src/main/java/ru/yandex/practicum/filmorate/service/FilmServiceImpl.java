@@ -148,5 +148,4 @@ public class FilmServiceImpl implements FilmService {
         response.put("лайков", films.getFilmRank(filmId).toString());
         return response;
     }
-
 }
