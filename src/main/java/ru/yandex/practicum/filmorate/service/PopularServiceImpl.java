@@ -21,13 +21,16 @@ public class PopularServiceImpl implements PopularService {
     @Override
     public List<Film> getPopular(Integer year, Integer genreId, Integer count) {
 
+        // получаем из базы список всех фильмов
         Collection<Film> draftFilms = films.findAllFilms();
+
+        // создаём новый список фильмов, но уже с жанрами
         Collection<Film> genreFilms = new ArrayList<>();
         draftFilms.forEach(film -> {
               genreFilms.add(films.getFilmById(film.getId()).get());
         });
 
-
+        // делаем выборку по году и жанру
         List<Film> listFilms = genreFilms.stream()
                 .filter(film ->
                         Optional.ofNullable(year).map(y ->
@@ -37,6 +40,7 @@ public class PopularServiceImpl implements PopularService {
                                         genre.getId() == g)).orElse(true))
                 .toList();
 
+        // сортируем список по рейтингу и возвращаем необходимое количество фильмов
         return listFilms.stream()
                 .sorted((film1, film2) ->
                         films.getFilmRank(film2.getId()).compareTo(films.getFilmRank(film1.getId())))
