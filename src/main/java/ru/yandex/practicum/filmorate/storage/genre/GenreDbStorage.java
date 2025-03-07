@@ -23,11 +23,12 @@ public class GenreDbStorage implements GenreStorage {
     @Autowired
     private NamedParameterJdbcTemplate jdbc;
 
-
     private static final String SQL_FIND_ALL_FILMS_WHITH_GENRES =
             "SELECT fg.*, g.name AS genre_name FROM films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID";
+
     /**
      * Поиск всех связей фильм - жанр
+     *
      * @return - список пар {filmId, genre}
      */
     @Override
@@ -42,7 +43,7 @@ public class GenreDbStorage implements GenreStorage {
     private static final String SQL_FIND_GENRES_BY_FILM_ID = """
             SELECT fg.film_id, g.* 
             FROM films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID
-            WHERE fg.film_id = :film_id 
+            WHERE fg.film_id = :film_id
             """;
     /**
      * Поиск жанров соответствующих фильму с указанным идентификатором
@@ -63,14 +64,14 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     private static final String SQL_UPDATE_GENRES = """
-            MERGE INTO films_genres (film_id, genre_id) 
+            MERGE INTO films_genres (film_id, genre_id)
              VALUES (:film_id, :genre_id)
             """;
     private static final String SQL_REMOVE_FILM_GENRES =
             "DELETE FROM films_genres WHERE film_id = :filmId";
-
     /**
      * Сохранение в базе данных жанров фильма если определены
+     *
      * @param film - объект описания фильма
      */
     @Override
@@ -127,5 +128,4 @@ public class GenreDbStorage implements GenreStorage {
             return Optional.empty();
         }
     }
-
 }
