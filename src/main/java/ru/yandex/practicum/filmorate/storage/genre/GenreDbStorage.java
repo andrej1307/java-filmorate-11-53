@@ -40,11 +40,12 @@ public class GenreDbStorage implements GenreStorage {
         }
     }
 
-    private static final String SQL_FIND_GENRES_BY_FILM_ID = """
+    private static final String SQL_FIND_GENRES_BY_FILM_ID = """ 
             SELECT fg.film_id, g.* 
             FROM films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID
             WHERE fg.film_id = :film_id
             """;
+
     /**
      * Поиск жанров соответствующих фильму с указанным идентификатором
      *
@@ -69,6 +70,7 @@ public class GenreDbStorage implements GenreStorage {
             """;
     private static final String SQL_REMOVE_FILM_GENRES =
             "DELETE FROM films_genres WHERE film_id = :filmId";
+
     /**
      * Сохранение в базе данных жанров фильма если определены
      *
@@ -95,6 +97,7 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     private static final String SQL_GET_ALL_GENRES = "SELECT * FROM genres";
+
     /**
      * Чтение всех жанров в справочнике
      *
@@ -110,6 +113,7 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     private static final String SQL_GET_GENRE = "SELECT * FROM genres WHERE id = :id";
+
     /**
      * чтение жанра по идентификатору
      *
