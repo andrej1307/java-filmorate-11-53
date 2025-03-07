@@ -392,8 +392,6 @@ public class FilmDbStorage implements FilmStorage {
             return List.of();
         }
     }
-}
-
 
     public List<Film> findFilmsByDirector(int directorId, String sortBy) {
         String sql;
