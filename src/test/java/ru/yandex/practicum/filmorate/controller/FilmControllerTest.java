@@ -234,12 +234,8 @@ class FilmControllerTest {
                 .andExpect(status().isOk())      // ожидается код статус 200
                 .andReturn();
 
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + result.getResponse().getContentAsString());
-
         List<Film> filmsPopular = gson.fromJson(result.getResponse().getContentAsString(),
                 new FilmListTypeToken().getType());
-
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + filmsPopular);
 
         assertTrue(filmsPopular.size() == 2,
                 "Число популярных фильмов не соответствует ожидаемому");
