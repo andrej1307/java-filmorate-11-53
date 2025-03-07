@@ -346,9 +346,7 @@ public class FilmDbStorage implements FilmStorage {
                         "JOIN likes l ON f.id = l.film_id " +
                         "WHERE (fg.genre_id = :genreId OR :genreId IS NULL) " +
                         "AND (EXTRACT(YEAR FROM f.releaseDate) = :year OR :year IS NULL) " +
-                        "GROUP BY f.id, f.name " +
-                        "ORDER BY likes DESC " +
-                        "LIMIT COALESCE(:limit, 1000)";
+                        "GROUP BY f.id ORDER BY likes DESC  LIMIT :limit";
 
         try {
             return jdbc.query(sqlSelectMostPopularFilmsByGenreByYear,
@@ -356,6 +354,7 @@ public class FilmDbStorage implements FilmStorage {
                             .addValue("genreId", genreId)
                             .addValue("year", year)
                             .addValue("limit", limit), filmRowMapper);
+
         } catch (DataAccessException ignored) {
             throw new InternalServerException("Ошибка при получении списка отзывов для фильма.");
         }

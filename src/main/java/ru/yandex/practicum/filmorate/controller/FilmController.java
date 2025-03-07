@@ -122,7 +122,7 @@ public class FilmController {
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> getReviews(@RequestParam(required = false) Integer year,
                                        @RequestParam(required = false) Integer genreId,
-                                       @RequestParam(required = false) Integer count) {
+                                       @RequestParam(required = false, defaultValue = "1111111") Integer count) {
         log.info("Получаем список самых популярных фильмов за {} года, жанра {} и лимитом{}", year, genreId, count);
         return service.getMostPopularFilms(year, genreId, count);
     }
