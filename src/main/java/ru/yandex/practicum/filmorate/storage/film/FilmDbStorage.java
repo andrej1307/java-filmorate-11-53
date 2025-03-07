@@ -11,12 +11,10 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmDirectorRowMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmGenreRowMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,10 +35,19 @@ public class FilmDbStorage implements FilmStorage {
     private static final String SQL_REMOVE_LIKE = "DELETE FROM likes WHERE user_id = :userId AND film_id = :filmId";
     private static final String SQL_FIND_ALL_FILMS = "SELECT f.*, mpa.name as mpa_name FROM films AS f " +
             " INNER JOIN mpa ON f.mpa_id = mpa.id";
-    private static final String SQL_FIND_FILM_BY_ID = "SELECT f.*, mpa.name as mpa_name, fg.genre_id, g.name AS genre_name\n" +
+    /* private static final String SQL_FIND_FILM_BY_ID = "SELECT f.*, mpa.name as mpa_name, fg.genre_id, g.name AS genre_name\n" +
             "            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)\n" +
             "                LEFT JOIN (films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID) ON fg.film_id = f.id\n" +
-            "            WHERE f.id = :id";
+            "            WHERE f.id = :id"; */
+    private static final String SQL_FIND_FILM_BY_ID = "SELECT f.*, mpa.name as mpa_name, fg.genre_id, g.name AS genre_name, d.id AS director_id, d.name AS director_name " +
+            "FROM films AS f " +
+            "INNER JOIN mpa ON f.MPA_ID = mpa.ID " +
+            "LEFT JOIN films_genres AS fg ON fg.film_id = f.id " +
+            "LEFT JOIN genres AS g ON fg.GENRE_ID = g.ID " +
+            "LEFT JOIN films_directors AS fd ON fd.film_id = f.id " +
+            "LEFT JOIN directors AS d ON fd.director_id = d.id " +
+            "WHERE f.id = :id";
+
     private static final String SQL_FIND_POPULAR_FILMS = "SELECT f.*, mpa.name AS mpa_name, popular.count_film\n" +
             "FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID\n)" +
             "    LEFT OUTER JOIN\n" +
@@ -48,6 +55,9 @@ public class FilmDbStorage implements FilmStorage {
             "     FROM LIKES GROUP BY film_id) AS popular\n" +
             "        ON f.id = popular.film_id\n" +
             "ORDER BY popular.count_film DESC\n";
+
+    private static final String SQL_UPDATE_DIRECTORS = """
+            INSERT INTO films_directors (film_id, director_id) VALUES (:film_id, :director_id)""";
 
     @Autowired
     private NamedParameterJdbcTemplate jdbc;
@@ -92,6 +102,16 @@ public class FilmDbStorage implements FilmStorage {
             jdbc.batchUpdate(SQL_UPDATE_GENRES, batch);
         }
 
+        // Добавляем режиссеров фильма, если определены
+        if (!newFilm.getDirectors().isEmpty()) {
+            SqlParameterSource[] batchDirectors = newFilm.getDirectors().stream()
+                    .map(director -> new MapSqlParameterSource()
+                            .addValue("film_id", filmId)
+                            .addValue("director_id", director.getId()))
+                    .toArray(SqlParameterSource[]::new);
+            jdbc.batchUpdate(SQL_UPDATE_DIRECTORS, batchDirectors);
+        }
+
         return getFilmById(filmId).orElseThrow(() ->
                 new InternalServerException("Ошибка при добавлении фильма."));
     }
@@ -129,6 +149,17 @@ public class FilmDbStorage implements FilmStorage {
                                     filmRs.addGenre(genre);
                                 }
                             } while (rs.next());
+
+                            do {
+                                Integer directorId = rs.getInt("director_id");
+                                if (directorId != 0) {
+                                    Director director = new Director();
+                                    director.setId(directorId);
+                                    director.setName(rs.getString("director_name"));
+                                    filmRs.addDirector(director);
+                                }
+                            } while (rs.next());
+
                             return filmRs;
                         }
                     }
@@ -201,6 +232,21 @@ public class FilmDbStorage implements FilmStorage {
                     .toArray(SqlParameterSource[]::new);
             jdbc.batchUpdate(SQL_UPDATE_GENRES, batch);
         }
+
+        // Удаляем старых режиссеров, которые были определены для фильма
+        jdbc.update("DELETE FROM films_directors WHERE film_id = :filmId",
+                new MapSqlParameterSource().addValue("filmId", filmId));
+
+        // Добавляем режиссеров фильма, если определены новые
+        if (!updFilm.getDirectors().isEmpty()) {
+            SqlParameterSource[] batchDirectors = updFilm.getDirectors().stream()
+                    .map(director -> new MapSqlParameterSource()
+                            .addValue("film_id", updFilm.getId())
+                            .addValue("director_id", director.getId()))
+                    .toArray(SqlParameterSource[]::new);
+            jdbc.batchUpdate(SQL_UPDATE_DIRECTORS, batchDirectors);
+        }
+
     }
 
     /**
@@ -265,6 +311,8 @@ public class FilmDbStorage implements FilmStorage {
                 .addValue("table", "likes"));
         jdbc.update("DELETE FROM films_genres", new MapSqlParameterSource()
                 .addValue("table", "films_genres"));
+        jdbc.update("DELETE FROM films_directors", new MapSqlParameterSource()
+                .addValue("table", "films_directors"));
         jdbc.update("DELETE FROM films", new MapSqlParameterSource()
                 .addValue("table", "films"));
     }
@@ -320,10 +368,49 @@ public class FilmDbStorage implements FilmStorage {
                     filmsMap.get(filmId).addGenre(genre);
                 }
             }
+
+            // Загружаем из базы данных всех режиссеров
+            List<FilmDirector> filmsDirectors = jdbc.query(
+                    "SELECT fd.*, d.name AS director_name FROM films_directors AS fd INNER JOIN directors AS d ON fd.DIRECTOR_ID = d.ID",
+                    new FilmDirectorRowMapper());
+
+            // Пополняем фильмы сведениями о режиссерах
+            for (FilmDirector filmDirector : filmsDirectors) {
+                int filmId = filmDirector.getFilmId();
+                if (filmsMap.containsKey(filmId)) {
+                    Director director = new Director();
+                    director.setId(filmDirector.getDirectorId());
+                    director.setName(filmDirector.getDirectorName());
+                    filmsMap.get(filmId).addDirector(director);
+                }
+            }
+
             return filmsMap.values();
         } catch (EmptyResultDataAccessException ignored) {
             return List.of();
         }
+    }
+
+    public List<Film> findFilmsByDirector(int directorId, String sortBy) {
+        String sql;
+        if ("likes".equalsIgnoreCase(sortBy)) {
+            sql = "SELECT f.* FROM films f " +
+                    "JOIN films_directors fd ON f.id = fd.film_id " +
+                    "JOIN likes l ON f.id = l.film_id " +
+                    "WHERE fd.director_id = :directorId " +
+                    "GROUP BY f.id " +
+                    "ORDER BY COUNT(l.id) DESC";
+        } else {
+            sql = "SELECT f.* FROM films f " +
+                    "JOIN films_directors fd ON f.id = fd.film_id " +
+                    "WHERE fd.director_id = :directorId " +
+                    "ORDER BY f.release_date";
+        }
+
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("directorId", directorId);
+
+        return jdbc.query(sql, params, new FilmRowMapper());
     }
 
 }
