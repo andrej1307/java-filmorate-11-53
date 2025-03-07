@@ -64,3 +64,21 @@ CREATE TABLE IF NOT EXISTS likes (
                                      film_id INTEGER NOT NULL REFERENCES films(id),
                                      PRIMARY KEY (user_id, film_id)
 );
+
+-- Создаем таблицу обзоров к фильмам
+CREATE TABLE IF NOT EXISTS reviews (
+                           review_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                           content VARCHAR(200),
+                           is_positive BOOLEAN NOT NULL,
+                           film_id INTEGER NOT NULL REFERENCES films(id),
+                           user_id INTEGER REFERENCES users(id),
+                           useful INTEGER DEFAULT 0
+);
+
+-- Создаем таблицу отзывов к обзорам
+CREATE TABLE IF NOT EXISTS feedbacks (
+                           reviewid_id INTEGER NOT NULL REFERENCES reviews( review_id) ON DELETE CASCADE ON UPDATE CASCADE,
+                           user_id INTEGER NOT NULL REFERENCES users(id),
+                           is_like BOOLEAN NOT NULL,
+                           PRIMARY KEY (reviewid_id, user_id )
+);
