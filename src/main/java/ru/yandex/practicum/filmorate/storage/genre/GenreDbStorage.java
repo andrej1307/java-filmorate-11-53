@@ -40,8 +40,8 @@ public class GenreDbStorage implements GenreStorage {
         }
     }
 
-    private static final String SQL_FIND_GENRES_BY_FILM_ID = """ 
-            SELECT fg.film_id, g.* 
+    private static final String SQL_FIND_GENRES_BY_FILM_ID = """
+            SELECT fg.film_id, g.*
             FROM films_genres AS fg INNER JOIN genres AS g ON fg.GENRE_ID = g.ID
             WHERE fg.film_id = :film_id
             """;
