@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.service.PopularService;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -130,6 +131,12 @@ public class FilmController {
     public String onDelete() {
         log.info("Удаляем все фильмы.");
         return service.onDelete();
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable int directorId,
+                                         @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+        return service.getFilmsByDirector(directorId, sortBy);
     }
 
 }
