@@ -66,13 +66,13 @@ public class FilmController {
     }
 
     /**
-    @GetMapping("/popular")
-    public Collection<Film> findPopularFilms(@RequestParam(defaultValue = "10") @Min(1) int count) {
-        log.info("Ищем популярные {} фильмов.", count);
-        return service.findPopularFilms(count);
-    }
+     * Получает список самых популярных фильмов за определенный год, жанр и лимит.
+     *
+     * @param year год, за который нужно получить список самых популярных фильмов
+     * @param genreId идентификатор жанра, по которому нужно получить список самых популярных фильмов
+     * @param count лимит количества фильмов, которые нужно получить
+     * @return коллекция самых популярных фильмов
      */
-
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> getReviews(@RequestParam(required = false) Integer year,

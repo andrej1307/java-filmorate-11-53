@@ -15,7 +15,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PopularServiceImpl implements PopularService {
 
-    @Autowired
     private final FilmStorage films;
 
     @Override
