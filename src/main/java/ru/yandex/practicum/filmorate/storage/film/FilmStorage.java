@@ -11,7 +11,7 @@ public interface FilmStorage {
     Film addNewFilm(Film newFilm);
 
     // чтение фильма по идентификатору
-    Optional<Film> getFilmById(Integer id);
+    Optional<Film> getFilmById(Integer filmId);
 
     // поиск всех фильмов
     Collection<Film> findAllFilms();
@@ -30,6 +30,9 @@ public interface FilmStorage {
 
     // Чтение числа "лайков" у фильма
     Integer getFilmRank(Integer filmId);
+
+    // Поиск общих фильмов у пользователей
+    Collection<Film> findCommonFilms(Integer userId1, Integer userId2);
 
     void removeAllFilms();
 

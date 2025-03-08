@@ -158,6 +158,12 @@ public class FilmServiceImpl implements FilmService {
         return response;
     }
 
+
+    public Collection<Film> findCommonFilms(Integer userId, Integer friendId) {
+        return films.findCommonFilms(userId, friendId);
+    }
+
+
     public List<Film> getFilmsByDirector(int directorId, String sortBy) {
         return films.findFilmsByDirector(directorId, sortBy);
     }

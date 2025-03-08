@@ -68,6 +68,13 @@ public class FilmController {
         return service.findPopularFilms(count);
     }
 
+    @GetMapping("/common")
+    public Collection<Film> findCommonFilms(@RequestParam @Min(1) int userId,
+                                            @RequestParam @Min(1) int friendId) {
+        log.info("Ищем общие фильмы ползователя id={} и пользователя id={}.", userId, friendId);
+        return service.findCommonFilms(userId, friendId);
+    }
+
     /**
      * Метод добавления нового фильма.
      *
