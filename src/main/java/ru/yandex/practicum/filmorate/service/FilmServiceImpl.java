@@ -10,10 +10,7 @@ import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Класс реализации запросов к информации о фильмах
@@ -160,4 +157,9 @@ public class FilmServiceImpl implements FilmService {
         response.put("лайков", films.getFilmRank(filmId).toString());
         return response;
     }
+
+    public List<Film> getFilmsByDirector(int directorId, String sortBy) {
+        return films.findFilmsByDirector(directorId, sortBy);
+    }
+
 }
