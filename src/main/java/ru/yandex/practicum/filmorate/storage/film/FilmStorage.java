@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface FilmStorage {
@@ -10,7 +11,7 @@ public interface FilmStorage {
     Film addNewFilm(Film newFilm);
 
     // чтение фильма по идентификатору
-    Optional<Film> getFilmById(Integer id);
+    Optional<Film> getFilmById(Integer filmId);
 
     // поиск всех фильмов
     Collection<Film> findAllFilms();
@@ -27,8 +28,13 @@ public interface FilmStorage {
     // удаление "лайка" к фильму
     Integer removeLike(Integer filmId, Integer userId);
 
-    // Чтение числа "лайков" у филььма
+    // Чтение числа "лайков" у фильма
     Integer getFilmRank(Integer filmId);
 
+    // Поиск общих фильмов у пользователей
+    Collection<Film> findCommonFilms(Integer userId1, Integer userId2);
+
     void removeAllFilms();
+
+    List<Film> findFilmsByDirector(int directorId, String sortBy);
 }

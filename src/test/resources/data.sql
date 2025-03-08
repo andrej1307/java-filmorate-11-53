@@ -29,6 +29,20 @@ VALUES ( 'TestFilmName',  'TestFilmDescription', '2001-02-03', 51, 1),
        ( 'TestFilmName3',  'TestFilmDescription3', '2003-04-05', 73, 3),
        ( 'TestFilmName4',  'TestFilmDescription4', '2004-05-06', 92, 4);
 
+-- задаем жанр  для тестового фильма
 INSERT INTO films_genres (film_id, genre_id)
 VALUES ( 1, 1 );
 
+-- создаем набор "лайков для расчета популярности фильмов
+INSERT INTO likes (user_id, film_id)
+VALUES (1, 2),
+       (1, 3),
+       (1, 4),
+       (2, 2),
+       (2, 3),
+       (2, 4),
+       (3, 1),
+       (3, 2),
+       (3, 4),
+       (4, 1),
+       (4, 4);
