@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.SearchService;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.util.Collection;
@@ -32,10 +35,12 @@ import java.util.Map;
 public class FilmController {
 
     private final FilmService service;
+    private final SearchService searchService;
 
     @Autowired
-    public FilmController(FilmService service) {
+    public FilmController(FilmService service, SearchService searchService) {
         this.service = service;
+        this.searchService = searchService;
     }
 
     /**
@@ -140,4 +145,19 @@ public class FilmController {
         return service.getFilmsByDirector(directorId, sortBy);
     }
 
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> search(@RequestParam(required = true) String query,
+                                   @RequestParam(defaultValue = "title") String by) {
+        log.info("Получаем список фильмов по строке поиска [ {} ]", query);
+        if (by.equals("title")) {
+            return searchService.searchFilms(query, true, false);
+        } else if (by.equals("director")) {
+            return searchService.searchFilms(query, false, true);
+        } else if (by.equals("title,director")) {
+            return searchService.searchFilms(query, true, true);
+        } else {
+            throw new ValidationException("Неправильные указание параметров поиска 'by' ");
+        }
+    }
 }
