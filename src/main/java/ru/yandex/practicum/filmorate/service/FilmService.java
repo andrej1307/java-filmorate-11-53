@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public interface FilmService {
@@ -26,4 +27,7 @@ public interface FilmService {
     Map<String, String> getFilmRank(Integer filmId);
 
     Collection<Film> findCommonFilms(Integer userId, Integer friendId);
+
+    List<Film> getFilmsByDirector(int directorId, String sortBy);
+
 }
