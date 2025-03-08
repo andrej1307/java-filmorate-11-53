@@ -6,14 +6,13 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.mapper.FilmDirectorRowMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmGenreRowMapper;
@@ -191,6 +190,7 @@ public class FilmDbStorage implements FilmStorage {
         genreStorage.saveFilmGeres(updFilm);
 
         // Удаляем старых режиссеров, которые были определены для фильма
+        Integer filmId = updFilm.getId();
         jdbc.update("DELETE FROM films_directors WHERE film_id = :filmId",
                 new MapSqlParameterSource().addValue("filmId", filmId));
 
@@ -377,12 +377,12 @@ public class FilmDbStorage implements FilmStorage {
                     "JOIN likes l ON f.id = l.film_id " +
                     "WHERE fd.director_id = :directorId " +
                     "GROUP BY f.id " +
-                    "ORDER BY COUNT(l.id) DESC";
+                    "ORDER BY COUNT(l.user_id) DESC";
         } else {
             sql = "SELECT f.* FROM films f " +
                     "JOIN films_directors fd ON f.id = fd.film_id " +
                     "WHERE fd.director_id = :directorId " +
-                    "ORDER BY f.release_date";
+                    "ORDER BY f.releasedate";
         }
 
         MapSqlParameterSource params = new MapSqlParameterSource();
