@@ -33,12 +33,12 @@ import java.util.Map;
 public class FilmController {
 
     private final FilmService service;
-    @Autowired
-    private PopularService popularService;
+    private final PopularService popularService;
 
     @Autowired
-    public FilmController(FilmService service) {
+    public FilmController(FilmService service, PopularService popularService) {
         this.service = service;
+        this.popularService = popularService;
     }
 
     /**
