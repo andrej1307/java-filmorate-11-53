@@ -270,6 +270,10 @@ public class FilmDbStorage implements FilmStorage {
     public void removeAllFilms() {
         jdbc.update("DELETE FROM likes", new MapSqlParameterSource()
                 .addValue("table", "likes"));
+        jdbc.update("DELETE FROM feedbacks", new MapSqlParameterSource()
+                .addValue("table", "feedbacks"));
+        jdbc.update("DELETE FROM reviews", new MapSqlParameterSource()
+                .addValue("table", "reviews"));
         jdbc.update("DELETE FROM films_genres", new MapSqlParameterSource()
                 .addValue("table", "films_genres"));
         jdbc.update("DELETE FROM films_directors", new MapSqlParameterSource()
