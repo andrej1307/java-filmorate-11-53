@@ -6,14 +6,13 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.mapper.FilmDirectorRowMapper;
 
@@ -193,7 +192,7 @@ public class FilmDbStorage implements FilmStorage {
 
         // Удаляем старых режиссеров, которые были определены для фильма
         jdbc.update("DELETE FROM films_directors WHERE film_id = :filmId",
-                new MapSqlParameterSource().addValue("filmId", filmId));
+                new MapSqlParameterSource().addValue("filmId", updFilm));
 
         // Добавляем режиссеров фильма, если определены новые
         if (!updFilm.getDirectors().isEmpty()) {
