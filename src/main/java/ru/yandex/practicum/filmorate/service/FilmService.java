@@ -26,5 +26,8 @@ public interface FilmService {
 
     Map<String, String> getFilmRank(Integer filmId);
 
+    Collection<Film> findCommonFilms(Integer userId, Integer friendId);
+
     List<Film> getFilmsByDirector(int directorId, String sortBy);
+
 }
