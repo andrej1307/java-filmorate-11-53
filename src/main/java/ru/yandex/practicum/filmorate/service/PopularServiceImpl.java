@@ -43,6 +43,6 @@ public class PopularServiceImpl implements PopularService {
                 .sorted(Comparator.comparing(film ->
                         films.getFilmRank(film.getId()), Comparator.reverseOrder()))
                 .limit(Optional.ofNullable(count).orElse(Integer.MAX_VALUE))
-                .collect(Collectors.toList());
+                .toList();
     }
 }
