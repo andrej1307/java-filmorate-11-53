@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 -- Создаем таблицу отзывов к обзорам
 CREATE TABLE IF NOT EXISTS feedbacks (
                            reviewid_id INTEGER NOT NULL REFERENCES reviews( review_id) ON DELETE CASCADE ON UPDATE CASCADE,
-                           user_id INTEGER NOT NULL REFERENCES users(id),
+                           user_id INTEGER NOT NULL REFERENCES users(id) ON UPDATE CASCADE,
                            is_like BOOLEAN NOT NULL,
                            PRIMARY KEY (reviewid_id, user_id )
 );

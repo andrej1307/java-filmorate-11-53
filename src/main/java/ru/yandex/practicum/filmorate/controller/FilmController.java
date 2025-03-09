@@ -153,7 +153,7 @@ public class FilmController {
             return searchService.searchFilms(query, true, false);
         } else if (by.equals("director")) {
             return searchService.searchFilms(query, false, true);
-        } else if (by.equals("title,director")) {
+        } else if (by.equals("title,director") || by.equals("director,title")) {
             return searchService.searchFilms(query, true, true);
         } else {
             throw new ValidationException("Неправильные указание параметров поиска 'by' ");
