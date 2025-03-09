@@ -121,14 +121,31 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private static final String SQL_FIND_FILMS_BY_IDS = """
-            SELECT f.*, mpa.name as mpa_name FROM films AS f
-            INNER JOIN mpa ON f.mpa_id = mpa.id
-            WHERE f.id IN :films_ids;
+            SELECT f.*, mpa.name as mpa_name FROM (films AS f
+            INNER JOIN mpa ON f.mpa_id = mpa.id)
+            WHERE f.id IN (:films_ids)
             """;
 
+    /**
+     * Поиск фильмов по идентификаторам
+     *
+     * @param filmsIds - список идентификаторов
+     * @return - список фильмов с соответствющими идентификаторами.
+     * Примечание:
+     * последовательность фильмов в выходном списке не с
+     */
     @Override
-    public Collection<Film> findFilmByIds(List<Integer> filmsIds) {
-        return List.of();
+    public Collection<Film> findFilmsByIds(List<Integer> filmsIds) {
+        // Загружаем из базы данных информацию о фильмах
+        try {
+            List<Film> films = jdbc.query(SQL_FIND_FILMS_BY_IDS,
+                    new MapSqlParameterSource()
+                        .addValue("films_ids", filmsIds),
+                    new FilmRowMapper());
+            return updateFilmsEnviroment(films);
+        } catch (EmptyResultDataAccessException ignored) {
+            return List.of();
+        }
     }
 
     private static final String SQL_FIND_ALL_FILMS = """

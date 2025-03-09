@@ -14,6 +14,8 @@ import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -217,4 +219,20 @@ class FilmDbStorageTest {
 
     }
 
+    @Test
+    void findFilmsByIds() {
+        List<Integer> filmsIds = new ArrayList<>();
+        filmsIds = Stream.of(3, 2, 4)
+                .collect(Collectors.toList());
+        ArrayList<Film> films = new ArrayList<>(filmDbStorage.findFilmsByIds(filmsIds));
+        assertTrue(!films.isEmpty() ,
+                "findFilmsByIds() - фильмы не найдены.");
+        assertEquals(films.size(), filmsIds.size(),
+                "findFilmsByIds() - Количество фильмов не соответствует запрошенному.");
+        for (Film film : films) {
+            assertTrue(filmsIds.contains(film.getId()) ,
+                    "findFilmsByIds() - Полученый фильм отсутствует в исхдном списке\n"
+                            + film.toString());
+        }
+    }
 }

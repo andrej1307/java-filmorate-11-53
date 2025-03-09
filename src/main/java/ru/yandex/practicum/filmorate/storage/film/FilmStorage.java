@@ -14,7 +14,7 @@ public interface FilmStorage {
     Optional<Film> getFilmById(Integer filmId);
 
     // чтение фильма по списку идентификаторов
-    Collection<Film> findFilmByIds(List<Integer> filmsIds);
+    Collection<Film> findFilmsByIds(List<Integer> filmsIds);
 
     // поиск всех фильмов
     Collection<Film> findAllFilms();
