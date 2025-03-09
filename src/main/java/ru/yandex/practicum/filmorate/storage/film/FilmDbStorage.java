@@ -76,7 +76,7 @@ public class FilmDbStorage implements FilmStorage {
         genreStorage.saveFilmGeres(newFilm);
 
         // Добавляем режиссеров фильма, если определены
-        directorStorage.SaveFilmDirectors(newFilm);
+        directorStorage.saveFilmDirectors(newFilm);
 
         // возвращаем объект прочитанный из базы
         return getFilmById(filmId).orElseThrow(() ->
@@ -233,7 +233,7 @@ public class FilmDbStorage implements FilmStorage {
         genreStorage.saveFilmGeres(updFilm);
 
         // Добавляем режиссеров фильма, если определены новые
-        directorStorage.SaveFilmDirectors(updFilm);
+        directorStorage.saveFilmDirectors(updFilm);
     }
 
     private static final String SQL_ADD_LIKE = "MERGE INTO likes (user_id, film_id) VALUES (:userId, :filmId)";

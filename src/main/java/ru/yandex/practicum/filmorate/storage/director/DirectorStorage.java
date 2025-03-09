@@ -21,7 +21,7 @@ public interface DirectorStorage {
     //======= добавляем новые методы
 
     // сохраняет привязку директоров к фильму
-    void SaveFilmDirectors(Film film);
+    void saveFilmDirectors(Film film);
 
     // ищет директорв привязанных к идентификатору фильма
     Collection<Director> findDirectorsByFilmId(Integer filmId);
