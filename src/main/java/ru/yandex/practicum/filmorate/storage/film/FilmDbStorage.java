@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.mapper.FilmDirectorRowMapper;
-import ru.yandex.practicum.filmorate.mapper.FilmGenreRowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
