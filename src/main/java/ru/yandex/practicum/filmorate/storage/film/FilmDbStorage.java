@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.film;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -15,11 +14,11 @@ import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class FilmDbStorage implements FilmStorage {
@@ -132,7 +131,7 @@ public class FilmDbStorage implements FilmStorage {
      * @param filmsIds - список идентификаторов
      * @return - список фильмов с соответствющими идентификаторами.
      * Примечание:
-     * последовательность фильмов в выходном списке не с
+     * последовательность фильмов в выходном списке не сохраняется
      */
     @Override
     public Collection<Film> findFilmsByIds(List<Integer> filmsIds) {
@@ -140,7 +139,7 @@ public class FilmDbStorage implements FilmStorage {
         try {
             List<Film> films = jdbc.query(SQL_FIND_FILMS_BY_IDS,
                     new MapSqlParameterSource()
-                        .addValue("films_ids", filmsIds),
+                            .addValue("films_ids", filmsIds),
                     new FilmRowMapper());
             return updateFilmsEnviroment(films);
         } catch (EmptyResultDataAccessException ignored) {
@@ -165,7 +164,7 @@ public class FilmDbStorage implements FilmStorage {
             List<Film> films = jdbc.query(SQL_FIND_ALL_FILMS, new FilmRowMapper());
             return updateFilmsEnviroment(films);
         } catch (EmptyResultDataAccessException ignored) {
-        return List.of();
+            return List.of();
         }
     }
 
@@ -316,32 +315,33 @@ public class FilmDbStorage implements FilmStorage {
     /**
      * Заполнение списка фильмов
      * сопутствующими объектами: жанрами, режиссерами, и т.д.
+     *
      * @return - коллекция фильмов.
      */
     private Collection<Film> updateFilmsEnviroment(List<Film> films) {
         try {
-                // Преобразуем список в Map с идентификаторами в качестве ключа
-                LinkedHashMap<Integer, Film> filmsMap = new LinkedHashMap<>();
-                for (int i = 0; i < films.size(); i++) {
-                    filmsMap.put(films.get(i).getId(), films.get(i));
-                }
+            // Преобразуем список в Map с идентификаторами в качестве ключа
+            LinkedHashMap<Integer, Film> filmsMap = new LinkedHashMap<>();
+            for (int i = 0; i < films.size(); i++) {
+                filmsMap.put(films.get(i).getId(), films.get(i));
+            }
 
-                // пополням фильмы сведениями о жанрах
-                for (FilmGenre filmGenre : genreStorage.findAllFilmWhithGenres()) {
-                    int filmId = filmGenre.getFilmId();
-                    if (filmsMap.keySet().contains(filmId)) {
-                        filmsMap.get(filmId).addGenre(filmGenre.getGenre());
-                    }
+            // пополням фильмы сведениями о жанрах
+            for (FilmGenre filmGenre : genreStorage.findAllFilmWhithGenres()) {
+                int filmId = filmGenre.getFilmId();
+                if (filmsMap.keySet().contains(filmId)) {
+                    filmsMap.get(filmId).addGenre(filmGenre.getGenre());
                 }
+            }
 
-                // Пополняем фильмы сведениями о режиссерах
-                for (FilmDirector filmDirector : directorStorage.findAllFilmDirector()) {
-                        int filmId = filmDirector.getFilmId();
-                        if (filmsMap.keySet().contains(filmId)) {
-                            filmsMap.get(filmId).addDirector(filmDirector.getDirector());
-                    }
+            // Пополняем фильмы сведениями о режиссерах
+            for (FilmDirector filmDirector : directorStorage.findAllFilmDirector()) {
+                int filmId = filmDirector.getFilmId();
+                if (filmsMap.keySet().contains(filmId)) {
+                    filmsMap.get(filmId).addDirector(filmDirector.getDirector());
                 }
-                return filmsMap.values();
+            }
+            return filmsMap.values();
 
         } catch (EmptyResultDataAccessException ignored) {
             return List.of();
