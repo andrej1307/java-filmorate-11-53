@@ -35,6 +35,4 @@ public interface FilmStorage {
     Collection<Film> findCommonFilms(Integer userId1, Integer userId2);
 
     void removeAllFilms();
-
-    List<Film> findFilmsByDirector(int directorId, String sortBy);
 }

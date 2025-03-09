@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.mapper;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.FilmDirector;
 
 import java.sql.ResultSet;
@@ -13,8 +14,10 @@ public class FilmDirectorRowMapper implements RowMapper<FilmDirector> {
     public FilmDirector mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         FilmDirector filmDirector = new FilmDirector();
         filmDirector.setFilmId(resultSet.getInt("film_id"));
-        filmDirector.setDirectorId(resultSet.getInt("director_id"));
-        filmDirector.setDirectorName(resultSet.getString("director_name"));
+        Director director = new Director();
+        director.setId(resultSet.getInt("director_id"));
+        director.setName(resultSet.getString("director_name"));
+        filmDirector.setDirector(director);
         return filmDirector;
     }
 }

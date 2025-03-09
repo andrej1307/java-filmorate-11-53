@@ -5,7 +5,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.mapper.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmDirector;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -48,5 +51,26 @@ public class DirectorDbStorage implements DirectorStorage {
     public void delete(int id) {
         String sql = "DELETE FROM directors WHERE id = ?";
         jdbcTemplate.update(sql, id);
+    }
+
+    @Override
+    public Collection<FilmDirector> findAllFilmDirector() {
+        return List.of();
+    }
+
+    @Override
+    public void SaveFilmDirectors(Film film) {
+
+    }
+
+    @Override
+    public Collection<Director> findDirectorsByFilmId(Integer filmId) {
+        return List.of(new Director(1, "Стивен Спилберг"),
+                new Director(2, "Люк Бессон"));
+    }
+
+    @Override
+    public Collection<Integer> findDirectorsByName(String nameSubstring) {
+        return List.of();
     }
 }
