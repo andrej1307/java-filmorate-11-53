@@ -19,9 +19,6 @@ public class PopularServiceImpl implements PopularService {
 // получаем из базы список всех фильмов
         Collection<Film> listFilms = films.findAllFilms();
 
-// добавляем жанры к фильмам
-        listFilms.forEach(film -> film.setGenres(films.getFilmById(film.getId()).get().getGenres()));
-
 // фильтруем фильмы по году, если указан
         if (year != null) {
             listFilms = listFilms.stream()
