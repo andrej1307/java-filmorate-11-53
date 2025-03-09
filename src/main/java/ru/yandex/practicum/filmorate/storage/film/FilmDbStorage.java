@@ -5,6 +5,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
@@ -232,7 +233,8 @@ public class FilmDbStorage implements FilmStorage {
         // сохраняем жанры фильма
         genreStorage.saveFilmGeres(updFilm);
 
-        // Добавляем режиссеров фильма, если определены новые
+
+        // Сохраняем режиссеров фильма, если определены новые
         directorStorage.SaveFilmDirectors(updFilm);
     }
 
