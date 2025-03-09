@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class FilmDbStorage implements FilmStorage {
@@ -119,6 +120,17 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    private static final String SQL_FIND_FILMS_BY_IDS = """
+            SELECT f.*, mpa.name as mpa_name FROM films AS f
+            INNER JOIN mpa ON f.mpa_id = mpa.id
+            WHERE f.id IN :films_ids;
+            """;
+
+    @Override
+    public Collection<Film> findFilmByIds(List<Integer> filmsIds) {
+        return List.of();
+    }
+
     private static final String SQL_FIND_ALL_FILMS = """
             SELECT f.*, mpa.name as mpa_name FROM films AS f
             INNER JOIN mpa ON f.mpa_id = mpa.id
@@ -131,7 +143,13 @@ public class FilmDbStorage implements FilmStorage {
      */
     @Override
     public Collection<Film> findAllFilms() {
-        return findFilmsByQuery(SQL_FIND_ALL_FILMS);
+        // Загружаем из базы данных информацию о фильмах
+        try {
+            List<Film> films = jdbc.query(SQL_FIND_ALL_FILMS, new FilmRowMapper());
+            return updateFilmsEnviroment(films);
+        } catch (EmptyResultDataAccessException ignored) {
+        return List.of();
+        }
     }
 
     private static final String SQL_FIND_POPULAR_FILMS = """
@@ -142,6 +160,7 @@ public class FilmDbStorage implements FilmStorage {
                  FROM LIKES GROUP BY film_id) AS popular
                  ON f.id = popular.film_id
             ORDER BY popular.count_film DESC
+            LIMIT :limit
             """;
 
     /**
@@ -152,10 +171,19 @@ public class FilmDbStorage implements FilmStorage {
      */
     @Override
     public Collection<Film> findPopularFilms(int count) {
-        if (count > 0) {
-            return findFilmsByQuery(SQL_FIND_POPULAR_FILMS + " LIMIT " + count);
+        List<Film> films;
+        if (count <= 0) {
+            count = 10;
         }
-        return findFilmsByQuery(SQL_FIND_POPULAR_FILMS);
+        try {
+            films = jdbc.query(SQL_FIND_POPULAR_FILMS,
+                    new MapSqlParameterSource()
+                            .addValue("limit", count),
+                    new FilmRowMapper());
+            return updateFilmsEnviroment(films);
+        } catch (EmptyResultDataAccessException ignored) {
+            return List.of();
+        }
     }
 
     private static final String SQL_UPDATE_FILM = """
@@ -269,69 +297,46 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     /**
-     * Метод поиска фильмов заполнения их соответствующими жанрами
-     *
-     * @param sqlQueryFilms - строка SQL запроса для выборки всех полей объекта Film
+     * Заполнение списка фильмов
+     * сопутствующими объектами: жанрами, режиссерами, и т.д.
      * @return - коллекция фильмов.
      */
-    private Collection<Film> findFilmsByQuery(String sqlQueryFilms) {
+    private Collection<Film> updateFilmsEnviroment(List<Film> films) {
         try {
-            // Загружаем из базы данных информацию о фильмах
-            Map<Integer, Film> filmsMap;
-            filmsMap = jdbc.query(sqlQueryFilms,
-                    new ResultSetExtractor<Map<Integer, Film>>() {
-                        @Override
-                        public Map<Integer, Film> extractData(ResultSet rs)
-                                throws SQLException, DataAccessException {
-                            Map<Integer, Film> fMap = new LinkedHashMap<>();
-                            while (rs.next()) {
-                                Film film = new FilmRowMapper().mapRow(rs, 1);
-                                fMap.put(film.getId(), film);
-                            }
-                            return fMap;
-                        }
-                    });
-            // Если ничего не нашли, то возвращаем пустой список
-            if (filmsMap.isEmpty()) {
-                return List.of();
-            }
-
-            // Загружаем из базы данных все ссылки на жанры
-            Collection<FilmGenre> filmsGenres;
-            filmsGenres = genreStorage.findAllFilmWhithGenres();
-
-            // пополням фильмы сведениями о жанрах
-            for (FilmGenre filmGenre : filmsGenres) {
-                int filmId = filmGenre.getFilmId();
-                if (filmsMap.keySet().contains(filmId)) {
-                    filmsMap.get(filmId).addGenre(filmGenre.getGenre());
+                // Преобразуем список в Map с идентификаторами в качестве ключа
+                LinkedHashMap<Integer, Film> filmsMap = new LinkedHashMap<>();
+                for (int i = 0; i < films.size(); i++) {
+                    filmsMap.put(films.get(i).getId(), films.get(i));
                 }
-            }
 
-            // Загружаем из базы данных всех режиссеров
-            Collection<FilmDirector> filmsDirectors;
-            filmsDirectors = directorStorage.findAllFilmDirector();
-
-            // Пополняем фильмы сведениями о режиссерах
-            for (FilmDirector filmDirector : filmsDirectors) {
-                int filmId = filmDirector.getFilmId();
-                if (filmsMap.keySet().contains(filmId)) {
-                    filmsMap.get(filmId).addDirector(filmDirector.getDirector());
+                // пополням фильмы сведениями о жанрах
+                for (FilmGenre filmGenre : genreStorage.findAllFilmWhithGenres()) {
+                    int filmId = filmGenre.getFilmId();
+                    if (filmsMap.keySet().contains(filmId)) {
+                        filmsMap.get(filmId).addGenre(filmGenre.getGenre());
+                    }
                 }
-            }
-            return filmsMap.values();
+
+                // Пополняем фильмы сведениями о режиссерах
+                for (FilmDirector filmDirector : directorStorage.findAllFilmDirector()) {
+                        int filmId = filmDirector.getFilmId();
+                        if (filmsMap.keySet().contains(filmId)) {
+                            filmsMap.get(filmId).addDirector(filmDirector.getDirector());
+                    }
+                }
+                return filmsMap.values();
 
         } catch (EmptyResultDataAccessException ignored) {
             return List.of();
         }
     }
 
-    private static final String SQL_FIND_COMMON_FILMS_FORMATTER = """
+    private static final String SQL_FIND_COMMON_FILMS = """
             SELECT f1.*, common.count_likes AS popular
             FROM (SELECT f.*, mpa.name as mpa_name FROM films AS f INNER JOIN mpa ON f.mpa_id = mpa.id) AS f1
             INNER JOIN (SELECT t1.*, t2.count_likes
                         FROM (SELECT film_id, COUNT(film_id) as count_film
-                              FROM likes WHERE (user_id = %d OR user_id = %d)
+                              FROM likes WHERE (user_id = :id1 OR user_id = :id2)
                         GROUP BY film_id) AS t1 -- таблица всех идентификаторов фильмов с лайками обоих пользователей
             INNER JOIN (SELECT  film_id, count(film_id) as count_likes
                         FROM LIKES GROUP BY film_id) AS t2 -- таблица популярности фильмов
@@ -350,8 +355,16 @@ public class FilmDbStorage implements FilmStorage {
      */
     @Override
     public Collection<Film> findCommonFilms(Integer userId1, Integer userId2) {
-        String query = String.format(SQL_FIND_COMMON_FILMS_FORMATTER, userId1, userId2);
-        return findFilmsByQuery(query);
+        try {
+            // Загружаем из базы данных информацию о фильмах
+            List<Film> films = jdbc.query(SQL_FIND_COMMON_FILMS,
+                    new MapSqlParameterSource()
+                            .addValue("id1", userId1)
+                            .addValue("id2", userId2),
+                    new FilmRowMapper());
+            return updateFilmsEnviroment(films);
+        } catch (EmptyResultDataAccessException ignored) {
+            return List.of();
+        }
     }
-
 }
