@@ -85,7 +85,7 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public Collection<Director> findDirectorByFilmId(Integer filmId) {
+    public Collection<Director> findDirectorsByFilmId(Integer filmId) {
         String sql = "SELECT d.id, d.name " +
                 "FROM directors d " +
                 "JOIN films_directors fd ON d.id = fd.director_id " +
@@ -117,11 +117,7 @@ public class DirectorDbStorage implements DirectorStorage {
             filmDirector.setFilmId(filmId);
 
             if (directorId != 0) {
-                filmDirector.setDirectorId(directorId);
-                filmDirector.setDirectorName(directorName);
-            } else {
-                filmDirector.setDirectorId(null);
-                filmDirector.setDirectorName("Без режиссёра");
+                filmDirector.setDirector(new Director(directorId, directorName));
             }
 
             filmDirectors.add(filmDirector);
