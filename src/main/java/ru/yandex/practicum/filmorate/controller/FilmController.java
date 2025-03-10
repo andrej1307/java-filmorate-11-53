@@ -33,7 +33,6 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/films")
-@RequiredArgsConstructor
 public class FilmController {
 
     private final FilmService service;
