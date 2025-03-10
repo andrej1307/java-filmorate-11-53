@@ -28,6 +28,7 @@ public class AdminDbStorage implements AdminStorage {
     @Autowired
     private NamedParameterJdbcTemplate jdbc;
 
+
     /**
      * Удаление всех пользователей
      */
@@ -40,6 +41,7 @@ public class AdminDbStorage implements AdminStorage {
         jdbc.update("DELETE FROM FEEDBACKS", new MapSqlParameterSource());
         jdbc.update("DELETE FROM users", new MapSqlParameterSource());
     }
+
 
     /**
      * Удаление пользователя и смеждных данных по ID
@@ -56,6 +58,7 @@ public class AdminDbStorage implements AdminStorage {
         jdbc.update(SQL_REMOVE_USERS_USER_BY_ID, mapSqlParameterSource);
     }
 
+
     /**
      * Удаление фильма и смеждных данных по ID
      */
@@ -69,6 +72,7 @@ public class AdminDbStorage implements AdminStorage {
         jdbc.update(SQL_REMOVE_REVIEWS_FILM_BY_ID, mapSqlParameterSource);
         jdbc.update(SQL_REMOVE_FILM_BY_ID, mapSqlParameterSource);
     }
+
 
     /**
      * Удаление всех фильмов
