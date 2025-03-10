@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -17,6 +19,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final FilmStorage films;
     private final UserStorage users;
     private final ReviewStorage reviews;
+    private final FeedService feeds;
 
     /**
      * Добавляет новый отзыв в базу данных.
@@ -35,7 +38,8 @@ public class ReviewServiceImpl implements ReviewService {
         }
         Review result = reviews.addReview(review);
 
-        // место для ленты событий - review.getId()
+        feeds.createFeed(review.getUserId(), EventType.REVIEW, Operation.ADD,
+                review.getReviewId());
 
         return result;
     }
@@ -54,7 +58,8 @@ public class ReviewServiceImpl implements ReviewService {
         }
         reviews.deleteReview(id);
 
-        // место для ленты событий - id
+        feeds.createFeed(reviews.getReviewById(id).get().getUserId(), EventType.REVIEW,
+                Operation.REMOVE, id);
 
     }
 
@@ -78,7 +83,8 @@ public class ReviewServiceImpl implements ReviewService {
         }
         Review result = reviews.updateReview(review);
 
-        // место для ленты событий - review.getId()
+        feeds.createFeed(review.getUserId(), EventType.REVIEW, Operation.UPDATE,
+                review.getReviewId());
 
         return result;
     }
