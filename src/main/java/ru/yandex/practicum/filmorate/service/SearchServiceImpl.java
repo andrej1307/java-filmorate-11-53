@@ -14,25 +14,23 @@ public class SearchServiceImpl implements SearchService {
     private final FilmStorage films;
 
     @Override
-    public List<Film> searchFilms(String stringSearch, Boolean titleSearch, Boolean directorSearch) {
+    public Collection<Film> searchFilms(String stringSearch, Boolean titleSearch, Boolean directorSearch) {
 
-// получаем из базы список всех фильмов
-        Collection<Film> listFilms = films.findAllFilms();
+        // получаем отсортированный список фильмов по рейтингу
+        Collection<Film> listFilms = films.findPopularFilms();
 
-// фильтруем фильмы по названию и имени режиссера
-        List<Film> filteredFilms = listFilms.stream()
+        // фильтруем фильмы по названию и имени режиссера
+        listFilms = listFilms.stream()
                 .filter(film -> {
                     boolean nameMatch = titleSearch && film.getName().contains(stringSearch);
                     boolean directorMatch = directorSearch && film.getDirectors()
-                            .stream().anyMatch(director -> director.getName().contains(stringSearch));
+                            .stream().anyMatch(director ->
+                                    director != null && director.getName() != null && director.getName()
+                                            .contains(stringSearch));
                     return nameMatch || directorMatch;
                 })
                 .toList();
 
-// сортируем фильмы по рейтингу и возвращаем из метода
-        return filteredFilms.stream()
-                .sorted(Comparator.comparing(film ->
-                        films.getFilmRank(film.getId()), Comparator.reverseOrder()))
-                .toList();
+        return listFilms;
     }
 }

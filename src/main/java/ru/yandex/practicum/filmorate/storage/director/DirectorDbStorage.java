@@ -85,10 +85,10 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public Collection<Director> findDirectorByFilmId(Integer filmId) {
+    public Collection<Director> findDirectorsByFilmId(Integer filmId) {
         String sql = "SELECT d.id, d.name " +
                 "FROM directors d " +
-                "JOIN films_directors fd ON d.id = fd.director_id " +
+                "JOIN film_directors fd ON d.id = fd.director_id " +
                 "WHERE fd.film_id = ?";
 
         return jdbcTemplate.query(sql, new Object[]{filmId}, (rs, rowNum) -> {
@@ -103,7 +103,7 @@ public class DirectorDbStorage implements DirectorStorage {
     public Collection<FilmDirector> findAllFilmDirector() {
         String sql = "SELECT f.id AS film_id, d.id AS director_id, d.name AS director_name " +
                 "FROM films f " +
-                "LEFT JOIN films_directors fd ON f.id = fd.film_id " +
+                "LEFT JOIN film_directors fd ON f.id = fd.film_id " +
                 "LEFT JOIN directors d ON fd.director_id = d.id";
 
         List<FilmDirector> filmDirectors = new ArrayList<>();
@@ -113,18 +113,15 @@ public class DirectorDbStorage implements DirectorStorage {
             Integer directorId = rs.getInt("director_id");
             String directorName = rs.getString("director_name");
 
-            FilmDirector filmDirector = new FilmDirector();
-            filmDirector.setFilmId(filmId);
+            if (directorName != null) {
+                FilmDirector filmDirector = new FilmDirector();
+                filmDirector.setFilmId(filmId);
+                filmDirector.setDirector(new Director());
 
-            if (directorId != 0) {
-                filmDirector.setDirectorId(directorId);
-                filmDirector.setDirectorName(directorName);
-            } else {
-                filmDirector.setDirectorId(null);
-                filmDirector.setDirectorName("Без режиссёра");
+                filmDirector.setDirector(new Director(directorId, directorName));
+                filmDirectors.add(filmDirector);
             }
 
-            filmDirectors.add(filmDirector);
         });
 
         return filmDirectors;

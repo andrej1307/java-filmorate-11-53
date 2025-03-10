@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS films_genres (
 );
 
 -- Создаем таблицу описания режисера фильма
-CREATE TABLE IF NOT EXISTS films_directors (
+CREATE TABLE IF NOT EXISTS film_directors (
                                             film_id INTEGER NOT NULL REFERENCES films(id),
                                             director_id INTEGER NOT NULL REFERENCES directors(id),
                                             PRIMARY KEY (film_id, director_id)
