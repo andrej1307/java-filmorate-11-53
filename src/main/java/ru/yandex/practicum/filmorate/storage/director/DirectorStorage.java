@@ -12,25 +12,18 @@ public interface DirectorStorage {
 
     Director findById(int id);
 
-    void save(Director director);
+    Director save(Director director);
 
-    void update(Director director);
+    Director update(Director director);
 
     void delete(int id);
 
-    //======= добавляем новые методы
-
-    // сохраняет привязку директоров к фильму
     void saveFilmDirectors(Film film);
 
-    // ищет директорв привязанных к идентификатору фильма
-    Collection<Director> findDirectorsByFilmId(Integer filmId);
+    Collection<Director> findDirectorByFilmId(Integer filmId);
 
-    // ищет все определенные пары {filmId, Director}
     Collection<FilmDirector> findAllFilmDirector();
 
-    // Ищет идентификаторы фильмов по подстроке в имени директора.
-    // Вот хочется мне реализовать поиск напрямую в FilmDbtorage,
-    // но правильнее будет использовать вызов метода в профильном хранилище.
-    Collection<Integer> findDirectorsByName(String nameSubstring);
+    Collection<Director> findDirectorsByName(String nameSubstring);
+
 }
