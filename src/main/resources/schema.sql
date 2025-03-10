@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS feedbacks (
                            PRIMARY KEY (reviewid_id, user_id )
 );
 
+
 -- Создаем таблицу, содержащую ленту событий пользователя
 CREATE TABLE IF NOT EXISTS feed (
                                      timestamp BIGINT NOT NULL,
@@ -96,3 +97,4 @@ CREATE TABLE IF NOT EXISTS feed (
                                      event_id INTEGER PRIMARY KEY AUTO_INCREMENT,
                                      entity_id INTEGER NOT NULL
 );
+
