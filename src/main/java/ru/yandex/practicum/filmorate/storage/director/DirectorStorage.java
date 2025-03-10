@@ -20,7 +20,7 @@ public interface DirectorStorage {
 
     void saveFilmDirectors(Film film);
 
-    Collection<Director> findDirectorByFilmId(Integer filmId);
+    Collection<Director> findDirectorsByFilmId(Integer filmId);
 
     Collection<FilmDirector> findAllFilmDirector();
 

@@ -85,7 +85,7 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public Collection<Director> findDirectorByFilmId(Integer filmId) {
+    public Collection<Director> findDirectorsByFilmId(Integer filmId) {
         String sql = "SELECT d.id, d.name " +
                 "FROM directors d " +
                 "JOIN films_directors fd ON d.id = fd.director_id " +
