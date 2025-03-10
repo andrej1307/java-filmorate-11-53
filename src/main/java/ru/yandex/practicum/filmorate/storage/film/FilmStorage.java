@@ -20,7 +20,7 @@ public interface FilmStorage {
     Collection<Film> findAllFilms();
 
     // поиск самых популярных фильмов
-    Collection<Film> findPopularFilms(int count);
+    Collection<Film> findPopularFilms();
 
     // изменение сведений о фильме
     void updateFilm(Film updFilm);

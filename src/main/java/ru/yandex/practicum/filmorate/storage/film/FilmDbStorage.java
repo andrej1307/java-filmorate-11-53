@@ -177,26 +177,18 @@ public class FilmDbStorage implements FilmStorage {
                  FROM LIKES GROUP BY film_id) AS popular
                  ON f.id = popular.film_id
             ORDER BY popular.count_film DESC
-            LIMIT :limit
             """;
 
     /**
      * Поиск популярных фильмов
      *
-     * @param count - количество фильмов в итоговом списке
      * @return - список самых популярных фильмов
      */
     @Override
-    public Collection<Film> findPopularFilms(int count) {
+    public Collection<Film> findPopularFilms() {
         List<Film> films;
-        if (count <= 0) {
-            count = 10;
-        }
         try {
-            films = jdbc.query(SQL_FIND_POPULAR_FILMS,
-                    new MapSqlParameterSource()
-                            .addValue("limit", count),
-                    new FilmRowMapper());
+            films = jdbc.query(SQL_FIND_POPULAR_FILMS, new FilmRowMapper());
             return updateFilmsEnviroment(films);
         } catch (EmptyResultDataAccessException ignored) {
             return List.of();

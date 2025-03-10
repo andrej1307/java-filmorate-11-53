@@ -12,6 +12,8 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 
+import static java.lang.Math.min;
+
 /**
  * Класс реализации запросов к информации о фильмах
  */
@@ -147,7 +149,8 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Collection<Film> findPopularFilms(int count) {
-        return films.findPopularFilms(count);
+        List<Film> fP = new ArrayList<>(films.findPopularFilms());
+        return fP.subList(0, min(fP.size(), count));
     }
 
     @Override
