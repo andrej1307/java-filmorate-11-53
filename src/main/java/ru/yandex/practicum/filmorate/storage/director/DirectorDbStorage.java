@@ -117,11 +117,7 @@ public class DirectorDbStorage implements DirectorStorage {
             filmDirector.setFilmId(filmId);
 
             if (directorId != 0) {
-                filmDirector.setDirectorId(directorId);
-                filmDirector.setDirectorName(directorName);
-            } else {
-                filmDirector.setDirectorId(null);
-                filmDirector.setDirectorName("Без режиссёра");
+                filmDirector.setDirector(new Director(directorId, directorName));
             }
 
             filmDirectors.add(filmDirector);

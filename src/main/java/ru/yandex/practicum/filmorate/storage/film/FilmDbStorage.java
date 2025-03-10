@@ -109,7 +109,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.addGenre(genre);
             }
             // Загружаем список директоров к фильму
-            for (Director director : directorStorage.findDirectorsByFilmId(filmId)) {
+            for (Director director : directorStorage.findDirectorByFilmId(filmId)) {
                 film.addDirector(director);
             }
             return Optional.ofNullable(film);
