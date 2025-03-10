@@ -32,6 +32,7 @@ public class DbAdminController {
         return service.removeAllFilms();
     }
 
+
     /**
      * Удаление фильма по ID
      *
@@ -44,6 +45,7 @@ public class DbAdminController {
         return service.removeFilmsById(filmId);
     }
 
+
     /**
      * Удаление всех пользователей
      *
@@ -55,6 +57,7 @@ public class DbAdminController {
         log.info("Удаляем всех пользователей.");
         return service.removeAllUsers();
     }
+
 
     /**
      * Удаление пользователей по ID

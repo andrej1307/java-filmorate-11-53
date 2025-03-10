@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 public interface DbAdminService {
 
+
     String removeAllUsers();
 
     String removeAllFilms();
@@ -9,4 +10,5 @@ public interface DbAdminService {
     String removeUsersById(Integer id);
 
     String removeFilmsById(Integer id);
+
 }

@@ -18,9 +18,11 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 @AllArgsConstructor
 public class DbAdminServiceImpl implements DbAdminService {
 
+
     private final AdminDbStorage adminDbStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+
 
 
     /**
@@ -35,6 +37,7 @@ public class DbAdminServiceImpl implements DbAdminService {
         return "Все пользователи удалены.";
     }
 
+
     /**
      * Удаление всех фильмов
      *
@@ -46,6 +49,7 @@ public class DbAdminServiceImpl implements DbAdminService {
         adminDbStorage.removeAllFilms();
         return "Все фильмы удалены.";
     }
+
 
 
     /**
