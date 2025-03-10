@@ -3,11 +3,12 @@ package ru.yandex.practicum.filmorate.service;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DirectorService {
     List<Director> getAllDirectors();
 
-    Director getDirectorById(int id);
+    Optional<Director> getDirectorById(int id);
 
     Director createDirector(Director director);
 

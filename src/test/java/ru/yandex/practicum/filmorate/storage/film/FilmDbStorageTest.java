@@ -9,10 +9,13 @@ import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.director.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({FilmDbStorage.class, GenreDbStorage.class})
+@Import({FilmDbStorage.class, GenreDbStorage.class, DirectorDbStorage.class})
 class FilmDbStorageTest {
     public static final int TEST_FILM_ID = 1;
 
@@ -119,7 +122,7 @@ class FilmDbStorageTest {
      */
     @Test
     void findPopularFilms() {
-        Collection<Film> films = filmDbStorage.findPopularFilms(2);
+        Collection<Film> films = filmDbStorage.findPopularFilms();
         List<Film> popular = new LinkedList<>(films);
         assertEquals(popular.get(0), filmDbStorage.getFilmById(4).get(),
                 "Самый популярный фильм расчитан неверно.");
@@ -216,4 +219,25 @@ class FilmDbStorageTest {
 
     }
 
+    /**
+     * Тестирование получения фильмов по списку идентификаторов
+     */
+    @Test
+    void findFilmsByIds() {
+        List<Integer> filmsIds = new ArrayList<>();
+        filmsIds = Stream.of(3, 2, 4)
+                .collect(Collectors.toList());
+        ArrayList<Film> films = new ArrayList<>(filmDbStorage.findFilmsByIds(filmsIds));
+
+        assertTrue(!films.isEmpty(),
+                "findFilmsByIds() - фильмы не найдены.");
+        assertEquals(films.size(), filmsIds.size(),
+                "findFilmsByIds() - Количество фильмов не соответствует запрошенному.");
+
+        for (Film film : films) {
+            assertTrue(filmsIds.contains(film.getId()),
+                    "findFilmsByIds() - Полученый фильм отсутствует в исхдном списке\n"
+                            + film.toString());
+        }
+    }
 }
