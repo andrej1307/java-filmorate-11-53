@@ -5,12 +5,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.PopularService;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,10 +33,12 @@ import java.util.Map;
 public class FilmController {
 
     private final FilmService service;
+    private final PopularService popularService;
 
     @Autowired
-    public FilmController(FilmService service) {
+    public FilmController(FilmService service, PopularService popularService) {
         this.service = service;
+        this.popularService = popularService;
     }
 
     /**
@@ -52,10 +65,30 @@ public class FilmController {
         return service.getFilmById(id);
     }
 
+    /**
+     * Получает список самых популярных фильмов за определенный год, жанр и лимит.
+     *
+     * @param year год, за который нужно получить список самых популярных фильмов
+     * @param genreId идентификатор жанра, по которому нужно получить список самых популярных фильмов
+     * @param count лимит количества фильмов, которые нужно получить
+     * @return коллекция самых популярных фильмов
+     */
     @GetMapping("/popular")
-    public Collection<Film> findPopularFilms(@RequestParam(defaultValue = "10") @Min(1) int count) {
-        log.info("Ищем популярные {} фильмов.", count);
-        return service.findPopularFilms(count);
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> getReviews(@RequestParam(required = false) Integer year,
+                                       @RequestParam(required = false) Integer genreId,
+                                       @RequestParam(required = false) Integer count) {
+        log.info("Получаем список самых популярных фильмов за {} года, жанра {} и лимитом{}", year, genreId, count);
+        return popularService.getPopular(year, genreId, count);
+    }
+
+
+
+    @GetMapping("/common")
+    public Collection<Film> findCommonFilms(@RequestParam @Min(1) int userId,
+                                            @RequestParam @Min(1) int friendId) {
+        log.info("Ищем общие фильмы ползователя id={} и пользователя id={}.", userId, friendId);
+        return service.findCommonFilms(userId, friendId);
     }
 
     /**
@@ -115,6 +148,12 @@ public class FilmController {
     public String onDelete() {
         log.info("Удаляем все фильмы.");
         return service.onDelete();
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable int directorId,
+                                         @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+        return List.of();
     }
 
 }
