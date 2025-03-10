@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmDirector;
 
+import java.util.Collection;
+import java.util.List;
 import java.sql.PreparedStatement;
 import java.util.*;
 

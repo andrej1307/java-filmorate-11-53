@@ -25,4 +25,5 @@ public interface DirectorStorage {
     Collection<FilmDirector> findAllFilmDirector();
 
     Collection<Director> findDirectorsByName(String nameSubstring);
+
 }
