@@ -3,15 +3,16 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.storage.director.DirectorDbStorage;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DirectorServiceImpl implements DirectorService {
 
     @Autowired
-    private DirectorDbStorage directorDbStorage;
+    private DirectorStorage directorDbStorage;
 
     @Override
     public List<Director> getAllDirectors() {
@@ -19,8 +20,8 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
-    public Director getDirectorById(int id) {
-        return directorDbStorage.findById(id);
+    public Optional<Director> getDirectorById(int id) {
+        return Optional.ofNullable(directorDbStorage.findById(id));
     }
 
     @Override
