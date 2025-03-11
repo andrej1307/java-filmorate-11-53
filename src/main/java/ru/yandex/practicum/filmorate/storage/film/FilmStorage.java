@@ -13,11 +13,14 @@ public interface FilmStorage {
     // чтение фильма по идентификатору
     Optional<Film> getFilmById(Integer filmId);
 
+    // чтение фильма по списку идентификаторов
+    Collection<Film> findFilmsByIds(List<Integer> filmsIds);
+
     // поиск всех фильмов
     Collection<Film> findAllFilms();
 
     // поиск самых популярных фильмов
-    Collection<Film> findPopularFilms(int count);
+    Collection<Film> findPopularFilms();
 
     // изменение сведений о фильме
     void updateFilm(Film updFilm);
@@ -35,6 +38,4 @@ public interface FilmStorage {
     Collection<Film> findCommonFilms(Integer userId1, Integer userId2);
 
     void removeAllFilms();
-
-    List<Film> findFilmsByDirector(int directorId, String sortBy);
 }

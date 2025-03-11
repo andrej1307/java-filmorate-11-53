@@ -12,6 +12,8 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 
+import static java.lang.Math.min;
+
 /**
  * Класс реализации запросов к информации о фильмах
  */
@@ -94,8 +96,11 @@ public class FilmServiceImpl implements FilmService {
         if (updFilm.getMpa() != null) {
             film.setMpa(updFilm.getMpa());
         }
-        if (updFilm.getGenres().size() > 0) {
+        if (!updFilm.getGenres().isEmpty()) {
             film.setGenres(updFilm.getGenres());
+        }
+        if (!updFilm.getDirectors().isEmpty()) {
+            film.setDirectors(updFilm.getDirectors());
         }
         films.updateFilm(film);
 
@@ -144,7 +149,8 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Collection<Film> findPopularFilms(int count) {
-        return films.findPopularFilms(count);
+        List<Film> fP = new ArrayList<>(films.findPopularFilms());
+        return fP.subList(0, min(fP.size(), count));
     }
 
     @Override
@@ -158,14 +164,7 @@ public class FilmServiceImpl implements FilmService {
         return response;
     }
 
-
     public Collection<Film> findCommonFilms(Integer userId, Integer friendId) {
         return films.findCommonFilms(userId, friendId);
     }
-
-
-    public List<Film> getFilmsByDirector(int directorId, String sortBy) {
-        return films.findFilmsByDirector(directorId, sortBy);
-    }
-
 }
