@@ -37,7 +37,6 @@ public class ReviewServiceImpl implements ReviewService {
             throw new NotFoundException("Не найден пользователь с id=" + review.getUserId());
         }
         Review result = reviews.addReview(review);
-
         feeds.createFeed(review.getUserId(), EventType.REVIEW, Operation.ADD,
                 result.getReviewId());
 
