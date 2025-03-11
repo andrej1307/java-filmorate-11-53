@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.PopularService;
+import ru.yandex.practicum.filmorate.service.SearchService;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.util.Collection;
@@ -34,10 +36,12 @@ public class FilmController {
 
     private final FilmService service;
     private final PopularService popularService;
+    private final SearchService searchService;
 
     @Autowired
-    public FilmController(FilmService service, PopularService popularService) {
+    public FilmController(FilmService service, PopularService popularService,SearchService searchService) {
         this.service = service;
+        this.searchService = searchService;
         this.popularService = popularService;
     }
 
@@ -81,8 +85,6 @@ public class FilmController {
         log.info("Получаем список самых популярных фильмов за {} года, жанра {} и лимитом{}", year, genreId, count);
         return popularService.getPopular(year, genreId, count);
     }
-
-
 
     @GetMapping("/common")
     public Collection<Film> findCommonFilms(@RequestParam @Min(1) int userId,
@@ -156,4 +158,19 @@ public class FilmController {
         return List.of();
     }
 
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> search(@RequestParam String query,
+                                   @RequestParam String by) {
+        log.info("Получаем список фильмов по строке поиска [ {} ]", query);
+        if (by.equals("title")) {
+            return searchService.searchFilms(query, true, false);
+        } else if (by.equals("director")) {
+            return searchService.searchFilms(query, false, true);
+        } else if (by.equals("title,director") || by.equals("director,title")) {
+            return searchService.searchFilms(query, true, true);
+        } else {
+            throw new ValidationException("Неправильные указание параметров поиска 'by' ");
+        }
+    }
 }
