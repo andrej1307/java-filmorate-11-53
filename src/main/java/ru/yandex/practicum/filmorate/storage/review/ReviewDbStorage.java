@@ -33,27 +33,27 @@ public class ReviewDbStorage implements ReviewStorage {
             "WHERE reviewid_id = :reviewid_id AND user_id = :user_id";
     private static final String SQL_INSERT_REVIEW_LIKE = "INSERT INTO feedbacks (reviewid_id, user_id, is_like) " +
             "VALUES (:reviewid_id, :user_id, :is_like)";
-    private static final String SQL_UPDATE_RATING_REVIEW_LIKE = "UPDATE reviews SET useful=useful+1 "+
+    private static final String SQL_UPDATE_RATING_REVIEW_LIKE = "UPDATE reviews SET useful=useful+1 " +
             "WHERE review_id = :review_id";
-    private static final String SQL_UPDATE_FEEDBACK_DISLIKE_LIKE = "UPDATE feedbacks SET is_like=:is_like "+
+    private static final String SQL_UPDATE_FEEDBACK_DISLIKE_LIKE = "UPDATE feedbacks SET is_like=:is_like " +
             "WHERE reviewid_id=:reviewid_id AND user_id=:user_id";
-    private static final String SQL_UPDATE_REVIEW_DISLIKE_LIKE = "UPDATE reviews SET useful=useful+2 "+
+    private static final String SQL_UPDATE_REVIEW_DISLIKE_LIKE = "UPDATE reviews SET useful=useful+2 " +
             "WHERE review_id = :review_id";
     private static final String SQL_INSERT_REVIEW_DISLIKE = "INSERT INTO feedbacks (reviewid_id, user_id, is_like) " +
             "VALUES (:reviewid_id, :user_id, :is_like)";
-    private static final String SQL_UPDATE_RATING_REVIEW_DISLIKE = "UPDATE reviews SET useful=useful-1 "+
+    private static final String SQL_UPDATE_RATING_REVIEW_DISLIKE = "UPDATE reviews SET useful=useful-1 " +
             "WHERE review_id = :review_id";
-    private static final String SQL_UPDATE_FEEDBACK_LIKE_DISLIKE = "UPDATE feedbacks SET is_like=:is_like WHERE "+
+    private static final String SQL_UPDATE_FEEDBACK_LIKE_DISLIKE = "UPDATE feedbacks SET is_like=:is_like WHERE " +
             "reviewid_id=:reviewid_id AND user_id=:user_id";
-    private static final String SQL_UPDATE_REVIEW_LIKE_DISLIKE = "UPDATE reviews SET useful=useful-2 WHERE "+
+    private static final String SQL_UPDATE_REVIEW_LIKE_DISLIKE = "UPDATE reviews SET useful=useful-2 WHERE " +
             "review_id = :review_id";
-    private static final String SQL_SELECT_FEEDBACK_BY_REVIEWID_ID_AND_USER_ID = "SELECT is_like FROM feedbacks "+
+    private static final String SQL_SELECT_FEEDBACK_BY_REVIEWID_ID_AND_USER_ID = "SELECT is_like FROM feedbacks " +
             "WHERE reviewid_id = :reviewid_id AND user_id = :user_id";
-    private static final String SQL_DELETE_FEEDBACK_DISLIKE = "UPDATE reviews SET useful=useful+1 "+
+    private static final String SQL_DELETE_FEEDBACK_DISLIKE = "UPDATE reviews SET useful=useful+1 " +
             "WHERE review_id = :review_id";
-    private static final String SQL_DELETE_FEEDBACK_LIKE = "UPDATE reviews SET useful=useful-1 "+
+    private static final String SQL_DELETE_FEEDBACK_LIKE = "UPDATE reviews SET useful=useful-1 " +
             "WHERE review_id = :review_id";
-    private static final String SQL_SELECT_CHECK_FEEDBACK = "SELECT reviewid_id FROM feedbacks "+
+    private static final String SQL_SELECT_CHECK_FEEDBACK = "SELECT reviewid_id FROM feedbacks " +
             "WHERE reviewid_id = :reviewid_id AND user_id = :user_id";
 
 
