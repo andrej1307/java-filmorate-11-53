@@ -26,6 +26,7 @@ public class DirectorDbStorage implements DirectorStorage {
 
         this.jdbcTemplate = jdbcTemplate;
     }
+
     private static final String SQL_SELECT_DIRECTORS_BY_NAME = "SELECT d.id, d.name FROM directors d " +
             "WHERE d.name LIKE ?";
     private static final String SQL_SELECT_FILM_DIRECTORS = "SELECT f.id AS film_id, d.id AS " +
