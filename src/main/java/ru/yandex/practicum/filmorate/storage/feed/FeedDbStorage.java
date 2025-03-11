@@ -27,7 +27,7 @@ public class FeedDbStorage implements FeedStorage {
     /**
      * Создает новую запись в ленту.
      *
-     * @param feed событие, которое нужно создать
+     * @param feed событие, которое нужно добавить в таблицу
      * @throws ValidationException если возникает ошибка при сохранении ленты
      */
     @Override
