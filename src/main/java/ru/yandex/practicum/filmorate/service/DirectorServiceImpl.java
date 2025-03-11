@@ -46,6 +46,14 @@ public class DirectorServiceImpl implements DirectorService {
         directorDbStorage.delete(id);
     }
 
+    /**
+     * Метод для получения списка фильмов, связанных с заданным директором.
+     *
+     * @param directorId идентификатор директора
+     * @param sortBy параметр сортировки ("year" для сортировки по году выпуска)
+     * @return список фильмов, связанных с заданным директором
+     * @throws NotFoundException если директор с заданным идентификатором не найден
+     */
     @Override
     public Collection<Film> getFilmsByDirectorId(int directorId, String sortBy) {
 

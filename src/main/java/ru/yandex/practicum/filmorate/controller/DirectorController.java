@@ -23,12 +23,23 @@ public class DirectorController {
     @Autowired
     private DirectorService directorService;
 
+    /**
+     * Возвращает список всех режиссеров.
+     *
+     * @return список всех режиссеров
+     */
     @GetMapping("/directors")
     @ResponseStatus(HttpStatus.OK)
     public List<Director> getAllDirectors() {
         return directorService.getAllDirectors();
     }
 
+    /**
+     * Возвращает режиссера по его идентификатору.
+     *
+     * @param id идентификатор режиссера
+     * @return режиссер с указанным идентификатором
+     */
     @GetMapping("/directors/{id}")
     public ResponseEntity<Director> getDirectorById(@PathVariable int id) {
         Optional<Director> director = directorService.getDirectorById(id);
@@ -36,13 +47,24 @@ public class DirectorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Создает нового режиссера.
+     *
+     * @param director информация о режиссере
+     * @return созданный режиссер
+     */
     @PostMapping("/directors")
-    public ResponseEntity<Director> createDirector(@RequestBody Director director) {
+    public ResponseEntity<Director> createDirector(@Validated(Marker.OnUpdate.class) @RequestBody Director director) {
         Director savedDirector = directorService.createDirector(director);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedDirector);
     }
 
-
+    /**
+     * Обновляет информацию о режиссере.
+     *
+     * @param director информация о режиссере
+     * @return обновленный режиссер
+     */
     @PutMapping("/directors")
     public ResponseEntity<Director> updateDirector(@Validated(Marker.OnUpdate.class) @RequestBody Director director) {
         log.info("Обновляем информацию о директоре id={} : {}", director.getId(), director.toString());
@@ -50,13 +72,23 @@ public class DirectorController {
         return ResponseEntity.status(HttpStatus.OK).body(updatedDirector);
     }
 
+    /**
+     * Удаляет режиссера по его идентификатору.
+     *
+     * @param id идентификатор режиссера
+     */
     @DeleteMapping("/directors/{id}")
     public void deleteDirector(@PathVariable int id) {
         directorService.deleteDirector(id);
     }
 
-
-
+    /**
+     * Возвращает список фильмов, отсортированных по режиссеру и параметру сортировки.
+     *
+     * @param id     идентификатор режиссера
+     * @param sortBy параметр сортировки
+     * @return список фильмов, отсортированных по режиссеру и параметру сортировки
+     */
     @GetMapping("/films/director/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> getFilmsByDirectorId(@PathVariable int id,
