@@ -8,9 +8,11 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +24,7 @@ public class DirectorController {
     private DirectorService directorService;
 
     @GetMapping("/directors")
+    @ResponseStatus(HttpStatus.OK)
     public List<Director> getAllDirectors() {
         return directorService.getAllDirectors();
     }
@@ -55,13 +58,13 @@ public class DirectorController {
 
 
     @GetMapping("/films/director/{id}")
-    public ResponseEntity<Director> getDirectorById(@PathVariable int id,
-                                                    @RequestParam(required = false) String sortBy) {
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> getFilmsByDirectorId(@PathVariable int id,
+                                                 @RequestParam(required = false) String sortBy) {
         log.info("Получаем список фильмов по по директору [ {} ] с сортировкой по {}", id, sortBy);
-        if (sortBy == null || sortBy.equals("likes") || sortBy.equals("year")) {
-            Optional<Director> director = directorService.getDirectorById(id);
-            return director.map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
+        if (sortBy.equals("likes") || sortBy.equals("year")) {
+            Collection<Film> films = directorService.getFilmsByDirectorId(id, sortBy);
+            return films;
         } else {
             throw new ValidationException("Неправильные указание параметров поиска 'sortBy' ");
         }

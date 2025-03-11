@@ -152,12 +152,6 @@ public class FilmController {
         return service.onDelete();
     }
 
-    @GetMapping("/director/{directorId}")
-    public List<Film> getFilmsByDirector(@PathVariable int directorId,
-                                         @RequestParam(required = false, defaultValue = "likes") String sortBy) {
-        return List.of();
-    }
-
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> search(@RequestParam String query,
