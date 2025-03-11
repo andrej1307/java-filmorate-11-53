@@ -160,8 +160,8 @@ public class FilmController {
 
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> search(@RequestParam(required = true) String query,
-                                   @RequestParam(defaultValue = "title") String by) {
+    public Collection<Film> search(@RequestParam String query,
+                                   @RequestParam String by) {
         log.info("Получаем список фильмов по строке поиска [ {} ]", query);
         if (by.equals("title")) {
             return searchService.searchFilms(query, true, false);

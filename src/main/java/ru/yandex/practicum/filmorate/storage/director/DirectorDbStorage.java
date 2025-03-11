@@ -24,7 +24,6 @@ public class DirectorDbStorage implements DirectorStorage {
     @Autowired
     public DirectorDbStorage(JdbcTemplate jdbcTemplate) {
 
-
         this.jdbcTemplate = jdbcTemplate;
     }
 
