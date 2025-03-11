@@ -6,10 +6,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.DirectorService;
+import ru.yandex.practicum.filmorate.service.DirectorServiceImpl;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.util.Collection;
@@ -18,44 +20,47 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
+@RequestMapping("/directors")
 public class DirectorController {
 
     @Autowired
     private DirectorService directorService;
 
-    @GetMapping("/directors")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Director> getAllDirectors() {
-        return directorService.getAllDirectors();
+    public Collection<Director> getAllDirectors() {
+        log.info("Ищем все фильмы");
+        return directorService.findAllDirectors();
     }
 
-    @GetMapping("/directors/{id}")
-    public ResponseEntity<Director> getDirectorById(@PathVariable int id) {
-        Optional<Director> director = directorService.getDirectorById(id);
-        return director.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Director findDirectorById(@PathVariable int id) {
+        log.info("Ищем режиссера id = {}.", id);
+        return directorService.findDirectorById(id);
     }
 
-    @PostMapping("/directors")
-    public ResponseEntity<Director> createDirector(@RequestBody Director director) {
-        Director savedDirector = directorService.createDirector(director);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedDirector);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Director createDirector(@Validated(Marker.OnBasic.class) @RequestBody Director director) {
+        log.info("Добавляем нового директора : {}.", director.toString());
+        return directorService.createDirector(director);
     }
 
+    @PutMapping
+    @ResponseStatus(HttpStatus.OK)
+    public Director updateDirector(@Validated(Marker.OnUpdate.class) @RequestBody Director director) {
+        log.info("Обновляем информацию о директоре : {}", director.toString());
+        return directorService.updateDirector(director);
 
-    @PutMapping("/directors")
-    public ResponseEntity<Director> updateDirector(@Validated(Marker.OnUpdate.class) @RequestBody Director director) {
-        log.info("Обновляем информацию о директоре id={} : {}", director.getId(), director.toString());
-        Director updatedDirector = directorService.updateDirector(director);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedDirector);
     }
 
-    @DeleteMapping("/directors/{id}")
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
     public void deleteDirector(@PathVariable int id) {
+        log.info("Удаляем директора id={}", id);
         directorService.deleteDirector(id);
     }
-
-
 
     @GetMapping("/films/director/{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -69,4 +74,5 @@ public class DirectorController {
             throw new ValidationException("Неправильные указание параметров поиска 'sortBy' ");
         }
     }
+
 }
