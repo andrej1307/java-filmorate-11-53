@@ -37,9 +37,8 @@ public class ReviewServiceImpl implements ReviewService {
             throw new NotFoundException("Не найден пользователь с id=" + review.getUserId());
         }
         Review result = reviews.addReview(review);
-
         feeds.createFeed(review.getUserId(), EventType.REVIEW, Operation.ADD,
-                review.getReviewId());
+                result.getReviewId());
 
         return result;
     }
@@ -56,10 +55,12 @@ public class ReviewServiceImpl implements ReviewService {
         if (reviews.getReviewById(id).isEmpty()) {
             throw new NotFoundException("Не найден отзыв с id=" + id);
         }
+
+        Review reviewDeleted = reviews.getReviewById(id).get();
         reviews.deleteReview(id);
 
-        feeds.createFeed(reviews.getReviewById(id).get().getUserId(), EventType.REVIEW,
-                Operation.REMOVE, id);
+        feeds.createFeed(reviewDeleted.getUserId(), EventType.REVIEW,
+                Operation.REMOVE, reviewDeleted.getReviewId());
 
     }
 
@@ -83,8 +84,8 @@ public class ReviewServiceImpl implements ReviewService {
         }
         Review result = reviews.updateReview(review);
 
-        feeds.createFeed(review.getUserId(), EventType.REVIEW, Operation.UPDATE,
-                review.getReviewId());
+        feeds.createFeed(result.getUserId(), EventType.REVIEW, Operation.UPDATE,
+                result.getReviewId());
 
         return result;
     }
