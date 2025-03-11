@@ -23,7 +23,6 @@ import ru.yandex.practicum.filmorate.service.SearchService;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
