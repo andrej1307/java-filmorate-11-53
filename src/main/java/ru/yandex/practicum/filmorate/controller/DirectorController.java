@@ -43,7 +43,7 @@ public class DirectorController {
     @PutMapping("/directors")
     public ResponseEntity<Director> updateDirector(@Validated(Marker.OnUpdate.class) @RequestBody Director director) {
         log.info("Обновляем информацию о директоре id={} : {}", director.getId(), director.toString());
-        Director updatedDirector = directorService.updateDirector(director) ;
+        Director updatedDirector = directorService.updateDirector(director);
         return ResponseEntity.status(HttpStatus.OK).body(updatedDirector);
     }
 
