@@ -13,7 +13,7 @@ public class AdminDbStorage implements AdminStorage {
      */
     private static final String SQL_REMOVE_LIKE_FILM_BY_ID = "DELETE FROM likes WHERE film_id = :filmId";
     private static final String SQL_REMOVE_GENRES_FILM_BY_ID = "DELETE FROM films_genres WHERE film_id = :filmId";
-    private static final String SQL_REMOVE_DIRECTORS_FILM_BY_ID = "DELETE FROM films_directors WHERE film_id = :filmId";
+    private static final String SQL_REMOVE_DIRECTORS_FILM_BY_ID = "DELETE FROM film_directors WHERE film_id = :filmId";
     private static final String SQL_REMOVE_REVIEWS_FILM_BY_ID = "DELETE FROM reviews WHERE film_id = :filmId";
     private static final String SQL_REMOVE_FILM_BY_ID = "DELETE FROM films WHERE id = :filmId";
     /**
@@ -23,6 +23,7 @@ public class AdminDbStorage implements AdminStorage {
     private static final String SQL_REMOVE_REVIEWS_USER_BY_ID = "DELETE FROM reviews WHERE USER_ID = :userId";
     private static final String SQL_REMOVE_FEED_USER_BY_ID = "DELETE FROM feed WHERE USER_ID = :userId";
     private static final String SQL_REMOVE_FRIENDS_USER_BY_ID = "DELETE FROM friends WHERE USER_ID = :userId";
+    private static final String SQL_REMOVE_FRIENDS_BACK_USER_BY_ID = "DELETE FROM friends WHERE FRIEND_ID = :userId";
     private static final String SQL_REMOVE_FEEDBACKS_USER_BY_ID = "DELETE FROM FEEDBACKS WHERE USER_ID = :userId";
     private static final String SQL_REMOVE_USERS_USER_BY_ID = "DELETE FROM USERS WHERE ID = :userId";
     @Autowired
@@ -54,6 +55,7 @@ public class AdminDbStorage implements AdminStorage {
         jdbc.update(SQL_REMOVE_REVIEWS_USER_BY_ID, mapSqlParameterSource);
         jdbc.update(SQL_REMOVE_FEED_USER_BY_ID, mapSqlParameterSource);
         jdbc.update(SQL_REMOVE_FRIENDS_USER_BY_ID, mapSqlParameterSource);
+        jdbc.update(SQL_REMOVE_FRIENDS_BACK_USER_BY_ID, mapSqlParameterSource);
         jdbc.update(SQL_REMOVE_FEEDBACKS_USER_BY_ID, mapSqlParameterSource);
         jdbc.update(SQL_REMOVE_USERS_USER_BY_ID, mapSqlParameterSource);
     }

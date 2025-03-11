@@ -10,6 +10,9 @@ import ru.yandex.practicum.filmorate.storage.bdadmin.AdminDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Класс реализации запросов к информации о пользователях
  */
@@ -22,7 +25,6 @@ public class DbAdminServiceImpl implements DbAdminService {
     private final AdminDbStorage adminDbStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-
 
 
     /**
@@ -51,7 +53,6 @@ public class DbAdminServiceImpl implements DbAdminService {
     }
 
 
-
     /**
      * Удаление пользователя  по ID
      *
@@ -63,11 +64,10 @@ public class DbAdminServiceImpl implements DbAdminService {
         User user = userStorage.getUserById(id)
                 .orElseThrow(() -> new NotFoundException("Не найден пользователь id=" + id));
         adminDbStorage.removeUsersById(id);
-        return "Пользователь " + id + " удален.";
+        List<User> userList = new ArrayList<>();
+        return "";
+
     }
-
-
-//
 
     /**
      * Удаление фильма по ID
@@ -80,7 +80,7 @@ public class DbAdminServiceImpl implements DbAdminService {
         Film film = filmStorage.getFilmById(id)
                 .orElseThrow(() -> new NotFoundException("Не найден фильм id=" + id));
         adminDbStorage.removeFilmsById(id);
-        return "Фильм " + id + " удален.";
+        return "";
     }
 
 
