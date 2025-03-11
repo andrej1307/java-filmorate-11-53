@@ -21,7 +21,7 @@ public class DirectorController {
     @Autowired
     private DirectorService directorService;
 
-    @GetMapping
+    @GetMapping("/directors")
     public List<Director> getAllDirectors() {
         return directorService.getAllDirectors();
     }
@@ -51,6 +51,8 @@ public class DirectorController {
     public void deleteDirector(@PathVariable int id) {
         directorService.deleteDirector(id);
     }
+
+
 
     @GetMapping("/films/director/{id}")
     public ResponseEntity<Director> getDirectorById(@PathVariable int id,
