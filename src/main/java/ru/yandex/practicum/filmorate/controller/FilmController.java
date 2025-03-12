@@ -151,6 +151,13 @@ public class FilmController {
         return service.onDelete();
     }
 
+    /**
+     * Метод поиска фильмов по названию или режиссеру
+     *
+     * @param query строка поиска
+     * @param by    параметр поиска (title - название фильма, director - режиссер)
+     * @return - список найденных фильмов
+     */
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> search(@RequestParam String query,
