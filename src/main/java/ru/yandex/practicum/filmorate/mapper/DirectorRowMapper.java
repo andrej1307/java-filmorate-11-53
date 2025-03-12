@@ -7,6 +7,9 @@ import ru.yandex.practicum.filmorate.model.Director;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Чтение полей информации режиссера из базы данных
+ */
 @Component
 public class DirectorRowMapper implements RowMapper<Director> {
     @Override
