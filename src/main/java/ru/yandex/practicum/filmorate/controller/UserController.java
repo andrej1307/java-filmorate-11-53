@@ -88,6 +88,12 @@ public class UserController {
         return userService.getCommonFriends(id, otherId);
     }
 
+    /**
+     * Метод вывода ленты событий пользователя
+     *
+     * @param id - идентификатор пользователя
+     * @return - список событий пользователя
+     */
     @GetMapping("/{id}/feed")
     public Collection<Feed> findFeed(@PathVariable Integer id) {
         log.info("Получаем ленту событий пользователя id={}.", id);

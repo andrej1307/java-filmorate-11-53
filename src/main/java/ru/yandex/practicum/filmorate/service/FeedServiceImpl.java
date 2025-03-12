@@ -22,12 +22,26 @@ public class FeedServiceImpl implements FeedService {
         this.feeds = feeds;
     }
 
+    /**
+     * Возвращает ленту событий пользователя с указанным идентификатором.
+     *
+     * @param userId идентификатор пользователя, ленты которого нужно вернуть
+     * @return список лент пользователя с указанным идентификатором
+     */
     @Override
     public Collection<Feed> findAllFeeds(Integer userId) {
         users.getUserById(userId);
         return feeds.findAllByUserId(userId);
     }
 
+    /**
+     * Создает запись в ленте событий.
+     *
+     * @param userId     идентификатор пользователя, совершившего событие
+     * @param event      тип события
+     * @param operation  операция, связанная с событием
+     * @param entityId   идентификатор сущности, с которой связано событие
+     */
     public void createFeed(Integer userId, EventType event, Operation operation, Integer entityId) {
         Feed feed = new Feed();
 

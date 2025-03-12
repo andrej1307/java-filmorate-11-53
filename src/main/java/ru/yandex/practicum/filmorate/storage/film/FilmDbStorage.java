@@ -229,7 +229,8 @@ public class FilmDbStorage implements FilmStorage {
         directorStorage.saveFilmDirectors(updFilm);
     }
 
-    private static final String SQL_ADD_LIKE = "MERGE INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
+    private static final String SQL_ADD_LIKE =
+            "INSERT INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
 
     /**
      * Добавление "лайка" к фильму.
@@ -286,22 +287,25 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    private static final String SQL_DELETE_ALL_FROM_TABLE =
+            "DELETE FROM :table";
+
     /**
      * Удаление всех фильмов
      */
     @Override
     public void removeAllFilms() {
-        jdbc.update("DELETE FROM likes", new MapSqlParameterSource()
+        jdbc.update(SQL_DELETE_ALL_FROM_TABLE, new MapSqlParameterSource()
                 .addValue("table", "likes"));
-        jdbc.update("DELETE FROM feedbacks", new MapSqlParameterSource()
+        jdbc.update(SQL_DELETE_ALL_FROM_TABLE, new MapSqlParameterSource()
                 .addValue("table", "feedbacks"));
-        jdbc.update("DELETE FROM reviews", new MapSqlParameterSource()
+        jdbc.update(SQL_DELETE_ALL_FROM_TABLE, new MapSqlParameterSource()
                 .addValue("table", "reviews"));
-        jdbc.update("DELETE FROM films_genres", new MapSqlParameterSource()
+        jdbc.update(SQL_DELETE_ALL_FROM_TABLE, new MapSqlParameterSource()
                 .addValue("table", "films_genres"));
-        jdbc.update("DELETE FROM films_directors", new MapSqlParameterSource()
+        jdbc.update(SQL_DELETE_ALL_FROM_TABLE, new MapSqlParameterSource()
                 .addValue("table", "films_directors"));
-        jdbc.update("DELETE FROM films", new MapSqlParameterSource()
+        jdbc.update(SQL_DELETE_ALL_FROM_TABLE, new MapSqlParameterSource()
                 .addValue("table", "films"));
     }
 
@@ -311,7 +315,7 @@ public class FilmDbStorage implements FilmStorage {
      *
      * @return - коллекция фильмов.
      */
-    private Collection<Film> updateFilmsEnviroment(List<Film> films) {
+    public Collection<Film> updateFilmsEnviroment(List<Film> films) {
         try {
             // Преобразуем список в Map с идентификаторами в качестве ключа
             LinkedHashMap<Integer, Film> filmsMap = new LinkedHashMap<>();

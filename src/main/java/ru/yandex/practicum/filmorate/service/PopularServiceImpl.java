@@ -15,14 +15,20 @@ public class PopularServiceImpl implements PopularService {
 
     private final FilmStorage films;
 
+    /**
+     * Возвращает список самых популярных фильмов.
+     *
+     * @param year год, по которому нужно отфильтровать фильмы
+     * @param genreId идентификатор жанра, по которому нужно отфильтровать фильмы
+     * @param count максимальное количество фильмов, которые нужно вернуть
+     * @return список самых популярных фильмов, отфильтрованных по году и/или жанру
+     * и ограниченных указанным количеством фильмов
+     */
     @Override
     public Collection<Film> getPopular(Integer year, Integer genreId, Integer count) {
 
-        // получаем отсортированный список фильмов по рейтингу
         Collection<Film> listFilms = films.findPopularFilms();
 
-        // фильтруем фильмы по году и/или по жанру, если указаны
-        // и возвращаем список фильмов, ограниченный указанным количеством фильмов
         listFilms = listFilms.stream()
                 .filter(film -> {
                     boolean yearMatch = year == null || film.getReleaseDate().getYear() == year;
