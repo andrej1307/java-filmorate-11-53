@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -11,8 +10,6 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -54,18 +51,18 @@ public class DirectorServiceImpl implements DirectorService {
     @Override
     public Collection<Film> getFilmsByDirectorId(final int directorId, String sortBy) {
 
-        Director directorValid = directorStorage.findDirectorById(directorId)
-                .orElseThrow(() -> new NotFoundException("Не найден директор id=" + directorId));
+        final Director directorValid = directorStorage.findDirectorById(directorId)
+                .orElseThrow(() -> new NotFoundException("Не найден режиссер. id=" + directorId));
 
         // получаем отсортированный список фильмов по рейтингу
-        Collection<Film> listFilms = filmStorage.findPopularFilms();
+        Collection<Film> listFilms;
 
-        listFilms = listFilms.stream()
-                        .filter(film -> film.getDirectors()
-                .stream().anyMatch(director -> director.getId() == directorId))
+        listFilms = filmStorage.findPopularFilms().stream()
+                .filter(film -> film.getDirectors().contains(directorValid))
+                // .stream().anyMatch(director -> director.getId() == directorId))
                 .toList();
 
-        if (sortBy.equals("year")) {
+        if ("year".equals(sortBy)) {
             listFilms = listFilms.stream()
                     .sorted((film1, film2) ->
                             film1.getReleaseDate().compareTo(film2.getReleaseDate()))

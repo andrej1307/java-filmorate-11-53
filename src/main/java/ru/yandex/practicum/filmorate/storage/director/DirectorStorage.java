@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmDirector;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 public interface DirectorStorage {

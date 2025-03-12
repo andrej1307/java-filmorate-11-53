@@ -3,27 +3,22 @@ package ru.yandex.practicum.filmorate.storage.director;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmDirectorRowMapper;
-import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmDirector;
 
-import java.sql.Types;
 import java.util.Collection;
 import java.util.List;
-import java.sql.PreparedStatement;
-import java.util.*;
+import java.util.Optional;
 
 @Repository
 public class DirectorDbStorage implements DirectorStorage {
@@ -35,6 +30,7 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     private static final String SQL_FIND_ALL_DIRECTORS = "SELECT * FROM directors";
+
     @Override
     public Collection<Director> findAll() {
         try {
@@ -101,7 +97,7 @@ public class DirectorDbStorage implements DirectorStorage {
         // обновляем информацию
         int rowsUpdated = jdbc.update(SQL_UPDATE_DIRECTOR, params);
         if (rowsUpdated == 0) {
-            throw new InternalServerException("Не удалось обновить информацию о режиссере " + director.toString());
+            throw new NotFoundException("Не удалось обновить информацию. Не наден режиссер " + director.toString());
         }
 
         // возвращаем объект прочитанный из базы
@@ -151,7 +147,7 @@ public class DirectorDbStorage implements DirectorStorage {
     private static final String SQL_FIND_DIRECTORS_BY_FILM_ID = """
             SELECT d.id, d.name
                 FROM directors d
-                JOIN films_directors fd ON d.id = fd.director_id
+                INNER JOIN films_directors fd ON d.id = fd.director_id
                 WHERE fd.film_id = :film_id
                 """;
 
@@ -170,7 +166,7 @@ public class DirectorDbStorage implements DirectorStorage {
 
     private static final String SQL_FIND_ALL_FILM_DIRECTORS =
             "SELECT fd.film_id, fd.director_id, d.name AS director_name "
-            + "FROM films_directors fd LEFT JOIN directors d ON fd.director_id = d.id";
+                    + "FROM films_directors fd LEFT JOIN directors d ON fd.director_id = d.id";
 
     @Override
     public Collection<FilmDirector> findAllFilmDirector() {
