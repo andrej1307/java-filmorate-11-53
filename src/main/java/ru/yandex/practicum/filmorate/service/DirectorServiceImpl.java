@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -9,56 +10,65 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
 
+/**
+ * Сервис обработки информации о режиссерах
+ */
 @Service
 @RequiredArgsConstructor
 public class DirectorServiceImpl implements DirectorService {
 
-    private final FilmStorage films;
-    private final DirectorStorage directorDbStorage;
+    @Autowired
+    private DirectorStorage directorStorage;
+
+    @Autowired
+    private FilmStorage filmStorage;
 
     @Override
-    public List<Director> getAllDirectors() {
-        return directorDbStorage.findAll();
+    public Collection<Director> findAllDirectors() {
+        return directorStorage.findAll();
     }
 
     @Override
-    public Optional<Director> getDirectorById(int id) {
-        return Optional.ofNullable(directorDbStorage.findById(id));
+    public Director findDirectorById(int id) {
+        return directorStorage.findDirectorById(id)
+                .orElseThrow(() -> new NotFoundException("Не найден режиссер. id=" + id));
     }
 
     @Override
     public Director createDirector(Director director) {
-        directorDbStorage.save(director);
-        return director;
+        return directorStorage.add(director);
     }
 
     @Override
     public Director updateDirector(Director director) {
-        directorDbStorage.update(director);
+        directorStorage.update(director);
         return director;
     }
 
     @Override
     public void deleteDirector(int id) {
-        directorDbStorage.delete(id);
+        directorStorage.delete(id);
     }
 
+    /**
+     * Поиск фильмов режиссераотсортироанных по году выхода и популярности
+     *
+     * @param directorId - идентификатор режиссера
+     * @param sortBy     - режим сортировки
+     * @return - список фильмов
+     */
     @Override
-    public Collection<Film> getFilmsByDirectorId(int directorId, String sortBy) {
+    public Collection<Film> getFilmsByDirectorId(final int directorId, String sortBy) {
 
-        if (directorDbStorage.findById(directorId) == null) {
-            throw new NotFoundException("Директор с id = " + directorId + " не найден");
-        }
+        final Director directorValid = directorStorage.findDirectorById(directorId)
+                .orElseThrow(() -> new NotFoundException("Не найден режиссер. id=" + directorId));
 
         // получаем отсортированный список фильмов по рейтингу
-        Collection<Film> listFilms = films.findPopularFilms();
+        Collection<Film> listFilms;
 
-        listFilms = listFilms.stream()
-                        .filter(film -> film.getDirectors()
-                .stream().anyMatch(director -> director.getId() == directorId))
+        listFilms = filmStorage.findPopularFilms().stream()
+                .filter(film -> film.getDirectors().contains(directorValid))
                 .toList();
 
         if ("year".equals(sortBy)) {
@@ -67,7 +77,6 @@ public class DirectorServiceImpl implements DirectorService {
                             film1.getReleaseDate().compareTo(film2.getReleaseDate()))
                     .toList();
         }
-
         return listFilms;
     }
 

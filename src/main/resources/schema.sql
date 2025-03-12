@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS MPA (
                                    description VARCHAR(80)
 );
 
+
 -- Создаем таблицу описания фильма
 CREATE TABLE IF NOT EXISTS films (
                                      id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS films_genres (
                                             genre_id INTEGER NOT NULL REFERENCES genres(id),
                                             PRIMARY KEY (film_id, genre_id)
 );
+
 
 -- Создаем таблицу "лайков" к фильмам
 CREATE TABLE IF NOT EXISTS likes (
