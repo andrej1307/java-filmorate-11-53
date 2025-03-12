@@ -18,7 +18,5 @@ public class Director {
     @NotNull(groups = {Marker.OnUpdate.class}, message = "id должен быть определен")
     private int id;
 
-    //   @NotBlank(message = "Имя режиссера не может быть пустым.",
-    //           groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
     private String name;
 }
