@@ -13,7 +13,7 @@ public class AdminDbStorage implements AdminStorage {
      */
     private static final String SQL_REMOVE_LIKE_FILM_BY_ID = "DELETE FROM likes WHERE film_id = :filmId";
     private static final String SQL_REMOVE_GENRES_FILM_BY_ID = "DELETE FROM films_genres WHERE film_id = :filmId";
-    private static final String SQL_REMOVE_DIRECTORS_FILM_BY_ID = "DELETE FROM film_directors WHERE film_id = :filmId";
+    private static final String SQL_REMOVE_DIRECTORS_FILM_BY_ID = "DELETE FROM films_directors WHERE film_id = :filmId";
     private static final String SQL_REMOVE_REVIEWS_FILM_BY_ID = "DELETE FROM reviews WHERE film_id = :filmId";
     private static final String SQL_REMOVE_FILM_BY_ID = "DELETE FROM films WHERE id = :filmId";
     /**
