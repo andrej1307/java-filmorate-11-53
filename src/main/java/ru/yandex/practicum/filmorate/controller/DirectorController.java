@@ -16,6 +16,9 @@ import java.util.Collection;
 @Slf4j
 @RestController
 
+/**
+ * Обработка запросов к информации о режиссерах
+ */
 public class DirectorController {
 
     @Autowired

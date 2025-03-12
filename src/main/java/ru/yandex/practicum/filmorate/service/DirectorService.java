@@ -5,6 +5,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 
+/**
+ * описание класса сервиса работы с информацией о режиссерах
+ */
 public interface DirectorService {
 
     Collection<Director> findAllDirectors();

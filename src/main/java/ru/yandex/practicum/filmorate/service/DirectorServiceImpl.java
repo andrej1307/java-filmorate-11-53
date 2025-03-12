@@ -11,6 +11,9 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.Collection;
 
+/**
+ * Сервис обработки информации о режиссерах
+ */
 @Service
 @RequiredArgsConstructor
 public class DirectorServiceImpl implements DirectorService {

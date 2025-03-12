@@ -20,6 +20,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Репозиторий информации о режиссерах
+ *
+ */
 @Repository
 public class DirectorDbStorage implements DirectorStorage {
 

@@ -7,6 +7,9 @@ import ru.yandex.practicum.filmorate.model.FilmDirector;
 import java.util.Collection;
 import java.util.Optional;
 
+/**
+ *
+ */
 public interface DirectorStorage {
     Collection<Director> findAll();
 

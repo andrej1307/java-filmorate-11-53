@@ -7,6 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
+/**
+ * Класс описания режиссеров
+ */
 @Data
 @EqualsAndHashCode(of = {"name"})
 @NoArgsConstructor
