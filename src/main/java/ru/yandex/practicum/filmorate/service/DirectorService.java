@@ -17,6 +17,7 @@ public interface DirectorService {
 
     void deleteDirector(int id);
 
+    // получение отсортироанного списка фильмов задаенного режиссера
     Collection<Film> getFilmsByDirectorId(int directorId, String sortBy);
 }
 

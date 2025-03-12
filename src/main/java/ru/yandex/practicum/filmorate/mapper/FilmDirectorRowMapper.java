@@ -8,6 +8,9 @@ import ru.yandex.practicum.filmorate.model.FilmDirector;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Чтене объектов связи фильма и режиссера
+ */
 @Component
 public class FilmDirectorRowMapper implements RowMapper<FilmDirector> {
     @Override

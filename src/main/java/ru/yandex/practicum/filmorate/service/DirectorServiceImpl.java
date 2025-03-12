@@ -48,6 +48,13 @@ public class DirectorServiceImpl implements DirectorService {
         directorStorage.delete(id);
     }
 
+    /**
+     * Поиск фильмов режиссераотсортироанных по году выхода и популярности
+     *
+     * @param directorId - идентификатор режиссера
+     * @param sortBy     - режим сортировки
+     * @return - список фильмов
+     */
     @Override
     public Collection<Film> getFilmsByDirectorId(final int directorId, String sortBy) {
 
@@ -59,7 +66,6 @@ public class DirectorServiceImpl implements DirectorService {
 
         listFilms = filmStorage.findPopularFilms().stream()
                 .filter(film -> film.getDirectors().contains(directorValid))
-                // .stream().anyMatch(director -> director.getId() == directorId))
                 .toList();
 
         if ("year".equals(sortBy)) {

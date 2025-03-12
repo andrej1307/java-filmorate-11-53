@@ -123,9 +123,14 @@ public class DirectorDbStorage implements DirectorStorage {
     private static final String SQL_DELETE_FILMS_DIRECTOR_BY_FILM =
             "DELETE FROM films_directors WHERE film_id = :film_id";
     private static final String SQL_UPDATE_FILMS_DIRECTORS =
-            "MERGE INTO films_directors (film_id, director_id) "
+            "INSERT INTO films_directors (film_id, director_id) "
                     + "VALUES (:film_id, :director_id)";
 
+    /**
+     * Сохранение информации о режиссерах из объекта Film
+     *
+     * @param film - объект  с информацией для сохранения
+     */
     @Override
     public void saveFilmDirectors(Film film) {
         Integer filmId = film.getId();

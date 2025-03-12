@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 @Data
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(of = {"name"})
 @NoArgsConstructor
 @AllArgsConstructor
 public class Director {
