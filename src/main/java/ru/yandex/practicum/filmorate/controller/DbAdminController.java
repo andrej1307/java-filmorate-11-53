@@ -20,18 +20,6 @@ public class DbAdminController {
 
     private final DbAdminService service;
 
-    /**
-     * Удаление всех фильмов
-     *
-     * @return - сообщение о выполнении
-     */
-    @DeleteMapping("/films/all")
-    @ResponseStatus(HttpStatus.OK)
-    public String deleteFilm() {
-        log.info("Удаляем все фильмы.");
-        return service.removeAllFilms();
-    }
-
 
     /**
      * Удаление фильма по ID
@@ -43,19 +31,6 @@ public class DbAdminController {
     public String deleteFilmById(@PathVariable @Min(0) Integer filmId) {
         log.info("Удаляем фильм по ID.");
         return service.removeFilmsById(filmId);
-    }
-
-
-    /**
-     * Удаление всех пользователей
-     *
-     * @return - сообщение о выполнении
-     */
-    @DeleteMapping("/users/all")
-    @ResponseStatus(HttpStatus.OK)
-    public String deleteUser() {
-        log.info("Удаляем всех пользователей.");
-        return service.removeAllUsers();
     }
 
 
