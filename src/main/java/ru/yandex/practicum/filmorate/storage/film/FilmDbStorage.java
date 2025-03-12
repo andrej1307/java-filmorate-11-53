@@ -311,7 +311,7 @@ public class FilmDbStorage implements FilmStorage {
      *
      * @return - коллекция фильмов.
      */
-    private Collection<Film> updateFilmsEnviroment(List<Film> films) {
+    public Collection<Film> updateFilmsEnviroment(List<Film> films) {
         try {
             // Преобразуем список в Map с идентификаторами в качестве ключа
             LinkedHashMap<Integer, Film> filmsMap = new LinkedHashMap<>();
