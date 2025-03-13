@@ -294,9 +294,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private static final String SQL_DELETE_ALL_FROM_TABLE =
-            "DELETE FROM :table";
-
     /**
      * Удаление всех фильмов
      */
