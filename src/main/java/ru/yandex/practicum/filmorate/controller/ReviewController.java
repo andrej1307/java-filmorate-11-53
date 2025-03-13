@@ -75,7 +75,7 @@ public class ReviewController {
      * Получает список отзывов по фильму с лимитом на количество отзывов.
      *
      * @param filmId id фильма, отзывы которого нужно получить
-     * @param count  количество отзывов, которое нужно получить
+     * @param count количество отзывов, которое нужно получить
      * @return список отзывов
      */
     @GetMapping
@@ -90,7 +90,7 @@ public class ReviewController {
      * Добавляет лайк к отзыву.
      *
      * @param reviewId id отзыва
-     * @param userId   id пользователя, который поставил лайк
+     * @param userId id пользователя, который поставил лайк
      * @return отзыв с обновленной информацией о лайках
      */
     @PutMapping("/{id}/like/{userId}")
@@ -105,7 +105,7 @@ public class ReviewController {
      * Добавляет дизлайк к отзыву.
      *
      * @param reviewId id отзыва
-     * @param userId   id пользователя, который поставил дизлайк
+     * @param userId id пользователя, который поставил дизлайк
      * @return отзыв с обновленной информацией о дизлайках
      */
     @PutMapping("/{id}/dislike/{userId}")
@@ -120,7 +120,7 @@ public class ReviewController {
      * Удаляет лайк у отзыва.
      *
      * @param reviewId id отзыва
-     * @param userId   id пользователя, который удалил лайк или дизлайк
+     * @param userId id пользователя, который удалил лайк или дизлайк
      * @return отзыв с обновленной информацией о лайках или дизлайках
      */
     @DeleteMapping("/{id}/like/{userId}")
@@ -135,7 +135,7 @@ public class ReviewController {
      * Удаляет дизлайк у отзыва.
      *
      * @param reviewId id отзыва
-     * @param userId   id пользователя, который удалил лайк или дизлайк
+     * @param userId id пользователя, который удалил лайк или дизлайк
      * @return отзыв с обновленной информацией о лайках или дизлайках
      */
     @DeleteMapping("/{id}/dislike/{userId}")
