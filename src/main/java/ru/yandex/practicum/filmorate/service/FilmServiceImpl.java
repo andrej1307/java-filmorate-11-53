@@ -101,6 +101,7 @@ public class FilmServiceImpl implements FilmService {
         // поэтому при наличии у фильма жанов и режиссеров они всегдадолжны быть заданы
             film.setGenres(updFilm.getGenres());
             film.setDirectors(updFilm.getDirectors());
+
         films.updateFilm(film);
 
         return films.getFilmById(id).orElseThrow(() ->
