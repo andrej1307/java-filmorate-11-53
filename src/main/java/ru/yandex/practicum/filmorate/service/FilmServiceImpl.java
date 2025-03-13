@@ -96,13 +96,13 @@ public class FilmServiceImpl implements FilmService {
         if (updFilm.getMpa() != null) {
             film.setMpa(updFilm.getMpa());
         }
-        if (!updFilm.getGenres().isEmpty()) {
+
+        // в тестах Postman для спринта №13 метод update применяется для удаления жанров
+        // поэтому при наличии у фильма жанов и режиссеров они всегдадолжны быть заданы
             film.setGenres(updFilm.getGenres());
-        }
-        if (!updFilm.getDirectors().isEmpty()) {
             film.setDirectors(updFilm.getDirectors());
-        }
-        films.updateFilm(updFilm);
+
+        films.updateFilm(film);
 
         return films.getFilmById(id).orElseThrow(() ->
                 new InternalServerException("Ошибка обновления фильма id=" + id));
