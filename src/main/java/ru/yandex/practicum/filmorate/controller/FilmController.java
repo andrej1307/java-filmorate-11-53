@@ -5,16 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -38,7 +29,7 @@ public class FilmController {
     private final SearchService searchService;
 
     @Autowired
-    public FilmController(FilmService service, PopularService popularService,SearchService searchService) {
+    public FilmController(FilmService service, PopularService popularService, SearchService searchService) {
         this.service = service;
         this.searchService = searchService;
         this.popularService = popularService;
@@ -71,9 +62,9 @@ public class FilmController {
     /**
      * Получает список самых популярных фильмов за определенный год, жанр и лимит.
      *
-     * @param year год, за который нужно получить список самых популярных фильмов
+     * @param year    год, за который нужно получить список самых популярных фильмов
      * @param genreId идентификатор жанра, по которому нужно получить список самых популярных фильмов
-     * @param count лимит количества фильмов, которые нужно получить
+     * @param count   лимит количества фильмов, которые нужно получить
      * @return коллекция самых популярных фильмов
      */
     @GetMapping("/popular")
