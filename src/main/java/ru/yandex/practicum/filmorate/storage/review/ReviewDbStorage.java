@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.mapper.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 
-
 import java.util.Collection;
 import java.util.Optional;
 
@@ -123,6 +122,7 @@ public class ReviewDbStorage implements ReviewStorage {
                             .addValue("content", review.getContent())
                             .addValue("is_positive", review.getIsPositive())
                             .addValue("useful", review.getUseful()));
+
             return getReviewById(review.getReviewId()).get();
         } catch (DataAccessException ignored) {
             throw new InternalServerException("Ошибка при обновлении отзыва.");

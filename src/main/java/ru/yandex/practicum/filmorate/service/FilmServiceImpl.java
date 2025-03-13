@@ -102,7 +102,7 @@ public class FilmServiceImpl implements FilmService {
         if (!updFilm.getDirectors().isEmpty()) {
             film.setDirectors(updFilm.getDirectors());
         }
-        films.updateFilm(film);
+        films.updateFilm(updFilm);
 
         return films.getFilmById(id).orElseThrow(() ->
                 new InternalServerException("Ошибка обновления фильма id=" + id));

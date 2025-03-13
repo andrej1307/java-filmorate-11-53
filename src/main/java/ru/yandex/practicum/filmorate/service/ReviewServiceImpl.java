@@ -107,7 +107,7 @@ public class ReviewServiceImpl implements ReviewService {
      * Возвращает список отзывов для фильма.
      *
      * @param filmId id фильма для получения отзывов, если передать null - вернет все фильмы.
-     * @param count количество отзывов для каждого фильма, если передать null - вернет 10 отзывов.
+     * @param count  количество отзывов для каждого фильма, если передать null - вернет 10 отзывов.
      * @return Коллекция отзывов для указанного фильма.
      */
     @Override
@@ -119,7 +119,7 @@ public class ReviewServiceImpl implements ReviewService {
      * Добавляет Like к отзыву.
      *
      * @param reviewId id отзыва для добавления оценки.
-     * @param userId id пользователя, который оценивает фильм.
+     * @param userId   id пользователя, который оценивает фильм.
      * @throws NotFoundException Если отзыв с указанным id не найден или пользователь с указанным id не найден.
      */
     @Override
@@ -137,7 +137,7 @@ public class ReviewServiceImpl implements ReviewService {
      * Добавляет Dislike к отзыву.
      *
      * @param reviewId id отзыва для добавления оценки.
-     * @param userId id пользователя, который оценивает фильм.
+     * @param userId   id пользователя, который оценивает фильм.
      * @throws NotFoundException Если отзыв с указанным id не найден или пользователь с указанным id не найден.
      */
     @Override
@@ -155,7 +155,7 @@ public class ReviewServiceImpl implements ReviewService {
      * Удаляет оценку отзыва фильма пользователем.
      *
      * @param reviewId id отзыва для удаления оценки.
-     * @param userId id пользователя, который удаляет оценку фильма.
+     * @param userId   id пользователя, который удаляет оценку фильма.
      * @throws NotFoundException Если отзыв или пользователь с указанным id не найдены.
      */
     @Override

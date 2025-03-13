@@ -24,6 +24,12 @@ public class FeedDbStorage implements FeedStorage {
 
     private final NamedParameterJdbcTemplate jdbc;
 
+    /**
+     * Создает новую запись в ленту.
+     *
+     * @param feed событие, которое нужно добавить в таблицу
+     * @throws ValidationException если возникает ошибка при сохранении ленты
+     */
     @Override
     public void create(Feed feed) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -44,6 +50,12 @@ public class FeedDbStorage implements FeedStorage {
         }
     }
 
+    /**
+     * Возвращает все записи из ленты событий для пользователя с указанным ID.
+     *
+     * @param userId ID пользователя
+     * @return список всех записей в ленте для указанного пользователя
+     */
     @Override
     public Collection<Feed> findAllByUserId(Integer userId) {
         try {
