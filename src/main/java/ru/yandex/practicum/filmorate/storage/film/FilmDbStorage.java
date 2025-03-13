@@ -22,6 +22,59 @@ import java.util.Optional;
 
 @Repository
 public class FilmDbStorage implements FilmStorage {
+    // Запрос для заполнения информации о фильме
+    private static final String SQL_INSERT_FILM = """
+            INSERT INTO films (name, description, releasedate, len_min, mpa_id)
+            VALUES ( :name, :description, :releasedate, :len_min, :mpa_id)
+            """;
+    private static final String SQL_UPDATE_DIRECTORS = """
+            INSERT INTO films_directors (film_id, director_id) VALUES (:film_id, :director_id)""";
+    private static final String SQL_FIND_FILM_BY_ID = """
+                SELECT f.*, mpa.name as mpa_name
+                FROM films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID
+                WHERE f.id = :id;
+            """;
+    private static final String SQL_FIND_FILMS_BY_IDS = """
+            SELECT f.*, mpa.name as mpa_name FROM (films AS f
+            INNER JOIN mpa ON f.mpa_id = mpa.id)
+            WHERE f.id IN (:films_ids)
+            """;
+    private static final String SQL_FIND_ALL_FILMS = """
+            SELECT f.*, mpa.name as mpa_name FROM films AS f
+            INNER JOIN mpa ON f.mpa_id = mpa.id
+            """;
+    private static final String SQL_FIND_POPULAR_FILMS = """
+            SELECT f.*, f.id AS film_id, mpa.name AS mpa_name, popular.count_film
+            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)
+                 LEFT OUTER JOIN
+                 (SELECT film_id, count(film_id) as count_film
+                 FROM LIKES GROUP BY film_id) AS popular
+                 ON f.id = popular.film_id
+            ORDER BY popular.count_film DESC
+            """;
+    private static final String SQL_UPDATE_FILM = """
+            UPDATE films SET name = :name, description = :description,
+            releasedate = :releasedate, len_min = :len_min, mpa_id = :mpa_id  WHERE id = :id
+            """;
+    private static final String SQL_ADD_LIKE =
+            "MERGE INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
+    private static final String SQL_REMOVE_LIKE = "DELETE FROM likes WHERE user_id = :userId AND film_id = :filmId";
+    private static final String SQL_DELETE_ALL_FROM_TABLE =
+            "DELETE FROM :table";
+    private static final String SQL_FIND_COMMON_FILMS = """
+            SELECT f1.*, common.count_likes AS popular
+            FROM (SELECT f.*, mpa.name as mpa_name FROM films AS f INNER JOIN mpa ON f.mpa_id = mpa.id) AS f1
+            INNER JOIN (SELECT t1.*, t2.count_likes
+                        FROM (SELECT film_id, COUNT(film_id) as count_film
+                              FROM likes WHERE (user_id = :id1 OR user_id = :id2)
+                        GROUP BY film_id) AS t1 -- таблица всех идентификаторов фильмов с лайками обоих пользователей
+            INNER JOIN (SELECT  film_id, count(film_id) as count_likes
+                        FROM LIKES GROUP BY film_id) AS t2 -- таблица популярности фильмов
+                        ON t1.film_id = t2.film_id
+                        WHERE count_film = 2) AS common -- таблица общих фильмов
+            ON f1.id = common.film_id
+            ORDER BY popular DESC;
+            """;
     private final NamedParameterJdbcTemplate jdbc;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
@@ -33,14 +86,6 @@ public class FilmDbStorage implements FilmStorage {
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
     }
-
-    // Запрос для заполнения информации о фильме
-    private static final String SQL_INSERT_FILM = """
-            INSERT INTO films (name, description, releasedate, len_min, mpa_id)
-            VALUES ( :name, :description, :releasedate, :len_min, :mpa_id)
-            """;
-    private static final String SQL_UPDATE_DIRECTORS = """
-            INSERT INTO films_directors (film_id, director_id) VALUES (:film_id, :director_id)""";
 
     /**
      * Добавление информации о фильме
@@ -83,12 +128,6 @@ public class FilmDbStorage implements FilmStorage {
                 new InternalServerException("Ошибка при добавлении фильма."));
     }
 
-    private static final String SQL_FIND_FILM_BY_ID = """
-                SELECT f.*, mpa.name as mpa_name
-                FROM films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID
-                WHERE f.id = :id;
-            """;
-
     /**
      * Поиск фильма по идентификатору
      *
@@ -119,17 +158,10 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private static final String SQL_FIND_FILMS_BY_IDS = """
-            SELECT f.*, mpa.name as mpa_name FROM (films AS f
-            INNER JOIN mpa ON f.mpa_id = mpa.id)
-            WHERE f.id IN (:films_ids)
-            """;
-
     /**
      * Поиск фильмов по идентификаторам
      *
      * @param filmsIds - список идентификаторов
-     *
      * @return - список фильмов с соответствющими идентификаторами.
      * Примечание:
      * последовательность фильмов в выходном списке не сохраняется
@@ -148,11 +180,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private static final String SQL_FIND_ALL_FILMS = """
-            SELECT f.*, mpa.name as mpa_name FROM films AS f
-            INNER JOIN mpa ON f.mpa_id = mpa.id
-            """;
-
     /**
      * Поиск всех фильмов
      *
@@ -169,16 +196,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private static final String SQL_FIND_POPULAR_FILMS = """
-            SELECT f.*, f.id AS film_id, mpa.name AS mpa_name, popular.count_film
-            FROM (films AS f INNER JOIN mpa ON f.MPA_ID = mpa.ID)
-                 LEFT OUTER JOIN
-                 (SELECT film_id, count(film_id) as count_film
-                 FROM LIKES GROUP BY film_id) AS popular
-                 ON f.id = popular.film_id
-            ORDER BY popular.count_film DESC
-            """;
-
     /**
      * Поиск популярных фильмов
      *
@@ -194,11 +211,6 @@ public class FilmDbStorage implements FilmStorage {
             return List.of();
         }
     }
-
-    private static final String SQL_UPDATE_FILM = """
-            UPDATE films SET name = :name, description = :description,
-            releasedate = :releasedate, len_min = :len_min, mpa_id = :mpa_id  WHERE id = :id
-            """;
 
     /**
      * Обновление сведений о фильме
@@ -229,9 +241,6 @@ public class FilmDbStorage implements FilmStorage {
         directorStorage.saveFilmDirectors(updFilm);
     }
 
-    private static final String SQL_ADD_LIKE =
-            "INSERT INTO likes (user_id, film_id) VALUES (:userId, :filmId)";
-
     /**
      * Добавление "лайка" к фильму.
      *
@@ -250,8 +259,6 @@ public class FilmDbStorage implements FilmStorage {
         }
         return getFilmRank(filmId);
     }
-
-    private static final String SQL_REMOVE_LIKE = "DELETE FROM likes WHERE user_id = :userId AND film_id = :filmId";
 
     /**
      * Удаление "лайка" у фильма.
@@ -287,9 +294,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    private static final String SQL_DELETE_ALL_FROM_TABLE =
-            "DELETE FROM :table";
-
     /**
      * Удаление всех фильмов
      */
@@ -315,7 +319,7 @@ public class FilmDbStorage implements FilmStorage {
      *
      * @return - коллекция фильмов.
      */
-    private Collection<Film> updateFilmsEnviroment(List<Film> films) {
+    public Collection<Film> updateFilmsEnviroment(List<Film> films) {
         try {
             // Преобразуем список в Map с идентификаторами в качестве ключа
             LinkedHashMap<Integer, Film> filmsMap = new LinkedHashMap<>();
@@ -344,21 +348,6 @@ public class FilmDbStorage implements FilmStorage {
             return List.of();
         }
     }
-
-    private static final String SQL_FIND_COMMON_FILMS = """
-            SELECT f1.*, common.count_likes AS popular
-            FROM (SELECT f.*, mpa.name as mpa_name FROM films AS f INNER JOIN mpa ON f.mpa_id = mpa.id) AS f1
-            INNER JOIN (SELECT t1.*, t2.count_likes
-                        FROM (SELECT film_id, COUNT(film_id) as count_film
-                              FROM likes WHERE (user_id = :id1 OR user_id = :id2)
-                        GROUP BY film_id) AS t1 -- таблица всех идентификаторов фильмов с лайками обоих пользователей
-            INNER JOIN (SELECT  film_id, count(film_id) as count_likes
-                        FROM LIKES GROUP BY film_id) AS t2 -- таблица популярности фильмов
-                        ON t1.film_id = t2.film_id
-                        WHERE count_film = 2) AS common -- таблица общих фильмов
-            ON f1.id = common.film_id
-            ORDER BY popular DESC;
-            """;
 
     /**
      * Поиск общих фильмов у пользователей

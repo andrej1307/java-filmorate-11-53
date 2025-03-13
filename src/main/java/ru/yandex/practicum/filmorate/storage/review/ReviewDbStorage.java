@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.mapper.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 
-
 import java.util.Collection;
 import java.util.Optional;
 
@@ -23,13 +22,37 @@ public class ReviewDbStorage implements ReviewStorage {
             "VALUES (:content, :is_positive, :film_id, :user_id, 0)";
     private static final String SQL_DELETE_REVIEW = "DELETE FROM reviews WHERE review_id = :review_id";
     private static final String SQL_UPDATE_REVIEW = "UPDATE reviews SET content = :content, " +
-            "is_positive = :is_positive, film_id = :film_id, user_id = :user_id WHERE review_id = :review_id";
+            "is_positive = :is_positive WHERE review_id = :review_id";
     private static final String SQL_SELECT_REVIEW_BY_ID = "SELECT * FROM reviews WHERE review_id = :review_id";
-    private static final String SQL_SELECT_REVIEWS_BY_FILM_ID = "SELECT * FROM ( " +
-            "SELECT *, ROW_NUMBER() OVER (PARTITION BY film_id ORDER BY useful DESC) as rn " +
-            "FROM reviews WHERE film_id = IFNULL(:film_id, film_id) ) t " +
-            "WHERE rn <= :count";
+    private static final String SQL_SELECT_REVIEWS_BY_FILM_ID = "SELECT r.* FROM reviews r " +
+            "WHERE r.film_id = IFNULL(:film_id, r.film_id) AND r.useful IN ( " +
+            "SELECT r2.useful FROM reviews r2 WHERE r2.film_id = r.film_id ORDER BY r2.useful DESC " +
+            "LIMIT :count ) ORDER BY r.useful DESC LIMIT :count";
     private static final String SQL_DELETE_FEEDBACK = "DELETE FROM feedbacks " +
+            "WHERE reviewid_id = :reviewid_id AND user_id = :user_id";
+    private static final String SQL_INSERT_REVIEW_LIKE = "INSERT INTO feedbacks (reviewid_id, user_id, is_like) " +
+            "VALUES (:reviewid_id, :user_id, :is_like)";
+    private static final String SQL_UPDATE_RATING_REVIEW_LIKE = "UPDATE reviews SET useful=useful+1 " +
+            "WHERE review_id = :review_id";
+    private static final String SQL_UPDATE_FEEDBACK_DISLIKE_LIKE = "UPDATE feedbacks SET is_like=:is_like " +
+            "WHERE reviewid_id=:reviewid_id AND user_id=:user_id";
+    private static final String SQL_UPDATE_REVIEW_DISLIKE_LIKE = "UPDATE reviews SET useful=useful+2 " +
+            "WHERE review_id = :review_id";
+    private static final String SQL_INSERT_REVIEW_DISLIKE = "INSERT INTO feedbacks (reviewid_id, user_id, is_like) " +
+            "VALUES (:reviewid_id, :user_id, :is_like)";
+    private static final String SQL_UPDATE_RATING_REVIEW_DISLIKE = "UPDATE reviews SET useful=useful-1 " +
+            "WHERE review_id = :review_id";
+    private static final String SQL_UPDATE_FEEDBACK_LIKE_DISLIKE = "UPDATE feedbacks SET is_like=:is_like WHERE " +
+            "reviewid_id=:reviewid_id AND user_id=:user_id";
+    private static final String SQL_UPDATE_REVIEW_LIKE_DISLIKE = "UPDATE reviews SET useful=useful-2 WHERE " +
+            "review_id = :review_id";
+    private static final String SQL_SELECT_FEEDBACK_BY_REVIEWID_ID_AND_USER_ID = "SELECT is_like FROM feedbacks " +
+            "WHERE reviewid_id = :reviewid_id AND user_id = :user_id";
+    private static final String SQL_DELETE_FEEDBACK_DISLIKE = "UPDATE reviews SET useful=useful+1 " +
+            "WHERE review_id = :review_id";
+    private static final String SQL_DELETE_FEEDBACK_LIKE = "UPDATE reviews SET useful=useful-1 " +
+            "WHERE review_id = :review_id";
+    private static final String SQL_SELECT_CHECK_FEEDBACK = "SELECT reviewid_id FROM feedbacks " +
             "WHERE reviewid_id = :reviewid_id AND user_id = :user_id";
 
 
@@ -98,9 +121,8 @@ public class ReviewDbStorage implements ReviewStorage {
                             .addValue("review_id", review.getReviewId())
                             .addValue("content", review.getContent())
                             .addValue("is_positive", review.getIsPositive())
-                            .addValue("film_id", review.getFilmId())
-                            .addValue("user_id", review.getUserId())
                             .addValue("useful", review.getUseful()));
+
             return getReviewById(review.getReviewId()).get();
         } catch (DataAccessException ignored) {
             throw new InternalServerException("Ошибка при обновлении отзыва.");
@@ -118,7 +140,8 @@ public class ReviewDbStorage implements ReviewStorage {
     public Optional<Review> getReviewById(Integer reviewId) {
         try {
             return Optional.ofNullable(jdbc.queryForObject(SQL_SELECT_REVIEW_BY_ID,
-                    new MapSqlParameterSource().addValue("review_id", reviewId), reviewRowMapper));
+                    new MapSqlParameterSource()
+                            .addValue("review_id", reviewId), reviewRowMapper));
         } catch (DataAccessException ignored) {
             return Optional.empty();
         }
@@ -153,22 +176,21 @@ public class ReviewDbStorage implements ReviewStorage {
     public Review addLike(Integer reviewIdId, Integer userId) {
         try {
             if (!containsFeedback(reviewIdId, userId)) {
-                jdbc.update("INSERT INTO feedbacks (reviewid_id, user_id, is_like) " +
-                                "VALUES (:reviewid_id, :user_id, :is_like)",
+                jdbc.update(SQL_INSERT_REVIEW_LIKE,
                         new MapSqlParameterSource()
                                 .addValue("reviewid_id", reviewIdId)
                                 .addValue("user_id", userId)
                                 .addValue("is_like", true));
-                jdbc.update("UPDATE reviews SET useful=useful+1 WHERE review_id = :review_id",
+                jdbc.update(SQL_UPDATE_RATING_REVIEW_LIKE,
                         new MapSqlParameterSource()
                                 .addValue("review_id", reviewIdId));
             } else {
-                jdbc.update("UPDATE feedbacks SET is_like=:is_like WHERE reviewid_id=:reviewid_id AND user_id=:user_id",
+                jdbc.update(SQL_UPDATE_FEEDBACK_DISLIKE_LIKE,
                         new MapSqlParameterSource()
                                 .addValue("reviewid_id", reviewIdId)
                                 .addValue("user_id", userId)
                                 .addValue("is_like", true));
-                jdbc.update("UPDATE reviews SET useful=useful+2 WHERE review_id = :review_id",
+                jdbc.update(SQL_UPDATE_REVIEW_DISLIKE_LIKE,
                         new MapSqlParameterSource()
                                 .addValue("review_id", reviewIdId));
             }
@@ -189,22 +211,21 @@ public class ReviewDbStorage implements ReviewStorage {
     public Review addDisLike(Integer reviewIdId, Integer userId) {
         try {
             if (!containsFeedback(reviewIdId, userId)) {
-                jdbc.update("INSERT INTO feedbacks (reviewid_id, user_id, is_like) " +
-                                "VALUES (:reviewid_id, :user_id, :is_like)",
+                jdbc.update(SQL_INSERT_REVIEW_DISLIKE,
                         new MapSqlParameterSource()
                                 .addValue("reviewid_id", reviewIdId)
                                 .addValue("user_id", userId)
                                 .addValue("is_like", false));
-                jdbc.update("UPDATE reviews SET useful=useful-1 WHERE review_id = :review_id",
+                jdbc.update(SQL_UPDATE_RATING_REVIEW_DISLIKE,
                         new MapSqlParameterSource()
                                 .addValue("review_id", reviewIdId));
             } else {
-                jdbc.update("UPDATE feedbacks SET is_like=:is_like WHERE reviewid_id=:reviewid_id AND user_id=:user_id",
+                jdbc.update(SQL_UPDATE_FEEDBACK_LIKE_DISLIKE,
                         new MapSqlParameterSource()
                                 .addValue("reviewid_id", reviewIdId)
                                 .addValue("user_id", userId)
                                 .addValue("is_like", false));
-                jdbc.update("UPDATE reviews SET useful=useful-2 WHERE review_id = :review_id",
+                jdbc.update(SQL_UPDATE_REVIEW_LIKE_DISLIKE,
                         new MapSqlParameterSource()
                                 .addValue("review_id", reviewIdId));
             }
@@ -224,8 +245,9 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public Review deleteFeedback(Integer reviewIdId, Integer userId) {
         try {
-            boolean change = Boolean.TRUE.equals(jdbc.queryForObject(
-                    "SELECT is_like FROM feedbacks WHERE reviewid_id = :reviewid_id AND user_id = :user_id",
+
+
+            boolean change = Boolean.TRUE.equals(jdbc.queryForObject(SQL_SELECT_FEEDBACK_BY_REVIEWID_ID_AND_USER_ID,
                     new MapSqlParameterSource()
                             .addValue("reviewid_id", reviewIdId)
                             .addValue("user_id", userId),
@@ -235,11 +257,11 @@ public class ReviewDbStorage implements ReviewStorage {
                             .addValue("reviewid_id", reviewIdId)
                             .addValue("user_id", userId));
             if (!change) {
-                jdbc.update("UPDATE reviews SET useful=useful+1 WHERE review_id = :review_id",
+                jdbc.update(SQL_DELETE_FEEDBACK_DISLIKE,
                         new MapSqlParameterSource()
                                 .addValue("review_id", reviewIdId));
             } else {
-                jdbc.update("UPDATE reviews SET useful=useful-1 WHERE review_id = :review_id",
+                jdbc.update(SQL_DELETE_FEEDBACK_LIKE,
                         new MapSqlParameterSource()
                                 .addValue("review_id", reviewIdId));
             }
@@ -259,7 +281,7 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public boolean containsFeedback(Integer reviewIdId, Integer userId) {
         try {
-            return !jdbc.queryForList("SELECT reviewid_id FROM feedbacks WHERE reviewid_id = :reviewid_id AND user_id = :user_id",
+            return !jdbc.queryForList(SQL_SELECT_CHECK_FEEDBACK,
                     new MapSqlParameterSource()
                             .addValue("reviewid_id", reviewIdId)
                             .addValue("user_id", userId), Integer.class).isEmpty();
