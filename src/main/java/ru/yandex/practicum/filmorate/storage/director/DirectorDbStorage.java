@@ -25,6 +25,7 @@ import java.util.Optional;
  */
 @Repository
 public class DirectorDbStorage implements DirectorStorage {
+
     private static final String SQL_FIND_ALL_DIRECTORS = "SELECT * FROM directors";
     private static final String SQL_FIND_DIRECTOR_BY_ID =
             "SELECT * FROM directors WHERE id = :id";
@@ -52,6 +53,7 @@ public class DirectorDbStorage implements DirectorStorage {
                     + "FROM films_directors fd LEFT JOIN directors d ON fd.director_id = d.id";
     private static final String SQL_FIND_DIRECTORS_BY_NAME =
             "SELECT d.id, d.name FROM directors d WHERE d.name LIKE %:name%";
+
     private final NamedParameterJdbcTemplate jdbc;
 
     public DirectorDbStorage(@Autowired NamedParameterJdbcTemplate jdbc) {
