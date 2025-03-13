@@ -5,14 +5,17 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmDirector;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Optional;
 
+/**
+ *
+ */
 public interface DirectorStorage {
-    List<Director> findAll();
+    Collection<Director> findAll();
 
-    Director findById(int id);
+    Optional<Director> findDirectorById(int id);
 
-    Director save(Director director);
+    Director add(Director director);
 
     Director update(Director director);
 
