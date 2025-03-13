@@ -25,7 +25,6 @@ import java.util.Optional;
  */
 @Repository
 public class DirectorDbStorage implements DirectorStorage {
-
     private static final String SQL_FIND_ALL_DIRECTORS = "SELECT * FROM directors";
     private static final String SQL_FIND_DIRECTOR_BY_ID =
             "SELECT * FROM directors WHERE id = :id";
