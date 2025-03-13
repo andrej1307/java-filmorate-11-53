@@ -25,6 +25,7 @@ import java.util.Optional;
  */
 @Repository
 public class DirectorDbStorage implements DirectorStorage {
+
     private static final String SQL_FIND_ALL_DIRECTORS = "SELECT * FROM directors";
     private static final String SQL_FIND_DIRECTOR_BY_ID =
             "SELECT * FROM directors WHERE id = :id";
@@ -52,14 +53,11 @@ public class DirectorDbStorage implements DirectorStorage {
                     + "FROM films_directors fd LEFT JOIN directors d ON fd.director_id = d.id";
     private static final String SQL_FIND_DIRECTORS_BY_NAME =
             "SELECT d.id, d.name FROM directors d WHERE d.name LIKE %:name%";
-
     private final NamedParameterJdbcTemplate jdbc;
 
     public DirectorDbStorage(@Autowired NamedParameterJdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
-
-    private static final String SQL_FIND_ALL_DIRECTORS = "SELECT * FROM directors";
 
     @Override
     public Collection<Director> findAll() {
@@ -70,9 +68,6 @@ public class DirectorDbStorage implements DirectorStorage {
             return List.of();
         }
     }
-
-    private static final String SQL_FIND_DIRECTOR_BY_ID =
-            "SELECT * FROM directors WHERE id = :id";
 
     @Override
     public Optional<Director> findDirectorById(int id) {
@@ -86,9 +81,6 @@ public class DirectorDbStorage implements DirectorStorage {
             return Optional.empty();
         }
     }
-
-    private static final String SQL_INSERT_DIRECTOR =
-            "INSERT INTO directors (name) VALUES (:name)";
 
     @Override
     public Director add(Director director) {
@@ -113,10 +105,6 @@ public class DirectorDbStorage implements DirectorStorage {
                 new InternalServerException("Ошибка при добавлении режиссера."));
     }
 
-
-    private static final String SQL_UPDATE_DIRECTOR =
-            "UPDATE directors SET name = :name WHERE id = :id";
-
     @Override
     public Director update(Director director) {
         // задаем параметры SQL запоса
@@ -134,11 +122,6 @@ public class DirectorDbStorage implements DirectorStorage {
         return findDirectorById(director.getId())
                 .orElseThrow(() -> new InternalServerException("Ошибка при обновлении режиссера."));
     }
-
-    private static final String SQL_DELETE_FILMS_DIRECTOR =
-            "DELETE FROM films_directors WHERE director_id = :id";
-    private static final String SQL_DELETE_DIRECTOR =
-            "DELETE FROM directors WHERE id = :id";
 
     @Override
     public void delete(int id) {
@@ -173,13 +156,6 @@ public class DirectorDbStorage implements DirectorStorage {
         jdbc.batchUpdate(SQL_UPDATE_FILMS_DIRECTORS, batch);
     }
 
-    private static final String SQL_FIND_DIRECTORS_BY_FILM_ID = """
-            SELECT d.id, d.name
-                FROM directors d
-                INNER JOIN films_directors fd ON d.id = fd.director_id
-                WHERE fd.film_id = :film_id
-                """;
-
     @Override
     public Collection<Director> findDirectorsByFilmId(Integer filmId) {
         try {
@@ -193,10 +169,6 @@ public class DirectorDbStorage implements DirectorStorage {
         }
     }
 
-    private static final String SQL_FIND_ALL_FILM_DIRECTORS =
-            "SELECT fd.film_id, fd.director_id, d.name AS director_name "
-                    + "FROM films_directors fd LEFT JOIN directors d ON fd.director_id = d.id";
-
     @Override
     public Collection<FilmDirector> findAllFilmDirector() {
         try {
@@ -207,9 +179,6 @@ public class DirectorDbStorage implements DirectorStorage {
             return List.of();
         }
     }
-
-    private static final String SQL_FIND_DIRECTORS_BY_NAME =
-            "SELECT d.id, d.name FROM directors d WHERE d.name LIKE %:name%";
 
     @Override
     public Collection<Director> findDirectorsByName(String nameSubstring) {
