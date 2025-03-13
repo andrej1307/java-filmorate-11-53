@@ -137,7 +137,7 @@ public class ReviewServiceImpl implements ReviewService {
      * Добавляет Dislike к отзыву.
      *
      * @param reviewId id отзыва для добавления оценки.
-     * @param userId   id пользователя, который оценивает фильм.
+     * @param userId id пользователя, который оценивает фильм.
      * @throws NotFoundException Если отзыв с указанным id не найден или пользователь с указанным id не найден.
      */
     @Override

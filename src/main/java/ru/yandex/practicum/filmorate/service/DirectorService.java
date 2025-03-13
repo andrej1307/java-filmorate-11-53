@@ -4,15 +4,13 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
-/**
- * описание класса сервиса работы с информацией о режиссерах
- */
 public interface DirectorService {
+    List<Director> getAllDirectors();
 
-    Collection<Director> findAllDirectors();
-
-    Director findDirectorById(int id);
+    Optional<Director> getDirectorById(int id);
 
     Director createDirector(Director director);
 
@@ -20,7 +18,5 @@ public interface DirectorService {
 
     void deleteDirector(int id);
 
-    // получение отсортироанного списка фильмов задаенного режиссера
     Collection<Film> getFilmsByDirectorId(int directorId, String sortBy);
 }
-
