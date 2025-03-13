@@ -23,12 +23,12 @@ public class ReviewDbStorage implements ReviewStorage {
             "VALUES (:content, :is_positive, :film_id, :user_id, 0)";
     private static final String SQL_DELETE_REVIEW = "DELETE FROM reviews WHERE review_id = :review_id";
     private static final String SQL_UPDATE_REVIEW = "UPDATE reviews SET content = :content, " +
-            "is_positive = :is_positive, film_id = :film_id, user_id = :user_id WHERE review_id = :review_id";
+            "is_positive = :is_positive WHERE review_id = :review_id";
     private static final String SQL_SELECT_REVIEW_BY_ID = "SELECT * FROM reviews WHERE review_id = :review_id";
-    private static final String SQL_SELECT_REVIEWS_BY_FILM_ID = "SELECT * FROM ( " +
-            "SELECT *, ROW_NUMBER() OVER (PARTITION BY film_id ORDER BY useful DESC) as rn " +
-            "FROM reviews WHERE film_id = IFNULL(:film_id, film_id) ) t " +
-            "WHERE rn <= :count";
+    private static final String SQL_SELECT_REVIEWS_BY_FILM_ID = "SELECT r.* FROM reviews r " +
+            "WHERE r.film_id = IFNULL(:film_id, r.film_id) AND r.useful IN ( " +
+            "SELECT r2.useful FROM reviews r2 WHERE r2.film_id = r.film_id ORDER BY r2.useful DESC " +
+            "LIMIT :count ) ORDER BY r.useful DESC LIMIT :count";
     private static final String SQL_DELETE_FEEDBACK = "DELETE FROM feedbacks " +
             "WHERE reviewid_id = :reviewid_id AND user_id = :user_id";
     private static final String SQL_INSERT_REVIEW_LIKE = "INSERT INTO feedbacks (reviewid_id, user_id, is_like) " +
@@ -122,8 +122,6 @@ public class ReviewDbStorage implements ReviewStorage {
                             .addValue("review_id", review.getReviewId())
                             .addValue("content", review.getContent())
                             .addValue("is_positive", review.getIsPositive())
-                            .addValue("film_id", review.getFilmId())
-                            .addValue("user_id", review.getUserId())
                             .addValue("useful", review.getUseful()));
             return getReviewById(review.getReviewId()).get();
         } catch (DataAccessException ignored) {

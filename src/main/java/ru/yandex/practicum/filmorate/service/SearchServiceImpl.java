@@ -13,14 +13,6 @@ public class SearchServiceImpl implements SearchService {
 
     private final FilmStorage films;
 
-    /**
-     * Возвращает список фильмов, отфильтрованных по названию и/или имени режиссера.
-     *
-     * @param stringSearch строка поиска
-     * @param titleSearch флаг, указывающий, нужно ли искать по названию фильма
-     * @param directorSearch флаг, указывающий, нужно ли искать по имени режиссера
-     * @return список фильмов, отфильтрованных по названию и/или имени режиссера
-     */
     @Override
     public Collection<Film> searchFilms(String stringSearch, Boolean titleSearch, Boolean directorSearch) {
 
