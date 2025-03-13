@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FeedService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
@@ -19,11 +21,13 @@ import java.util.Collection;
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserService service;
+    private final UserService userService;
+    private final FeedService feedService;
 
     @Autowired
-    public UserController(UserService service) {
-        this.service = service;
+    public UserController(UserService userService, FeedService feedService) {
+        this.userService = userService;
+        this.feedService = feedService;
     }
 
     /**
@@ -34,8 +38,8 @@ public class UserController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Collection<User> findAllUser() {
-        log.info("Запрашиваем список всех пользователей {}.", service.findAllUsers().size());
-        return service.findAllUsers();
+        log.info("Запрашиваем список всех пользователей {}.", userService.findAllUsers().size());
+        return userService.findAllUsers();
     }
 
     /**
@@ -47,7 +51,7 @@ public class UserController {
     @GetMapping("/{id}")
     public User findUser(@PathVariable Integer id) {
         log.info("Ищем пользователя id={}.", id);
-        return service.getUserById(id);
+        return userService.getUserById(id);
     }
 
     /**
@@ -59,7 +63,7 @@ public class UserController {
     @GetMapping("/{id}/friends")
     public Collection<User> findUsersFriends(@PathVariable Integer id) {
         log.info("Ищем друзей пользователя id={}.", id);
-        return service.getUserFriends(id);
+        return userService.getUserFriends(id);
     }
 
     /**
@@ -73,7 +77,19 @@ public class UserController {
     public Collection<User> findCommonFriends(@PathVariable("id") Integer id,
                                               @PathVariable("otherId") Integer otherId) {
         log.info("Ищем общих друзей пользователй: {}, {}.", id, otherId);
-        return service.getCommonFriends(id, otherId);
+        return userService.getCommonFriends(id, otherId);
+    }
+
+    /**
+     * Метод вывода ленты событий пользователя
+     *
+     * @param id - идентификатор пользователя
+     * @return - список событий пользователя
+     */
+    @GetMapping("/{id}/feed")
+    public Collection<Feed> findFeed(@PathVariable Integer id) {
+        log.info("Получаем ленту событий пользователя id={}.", id);
+        return feedService.findAllFeeds(id);
     }
 
     /**
@@ -86,7 +102,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public User addNewUser(@Validated(Marker.OnBasic.class) @RequestBody User user) {
         log.info("Создаем пользователя : {}.", user.toString());
-        return service.addNewUser(user);
+        return userService.addNewUser(user);
     }
 
     /**
@@ -102,7 +118,7 @@ public class UserController {
     public User updateUser(@Validated(Marker.OnUpdate.class) @RequestBody User updUser) {
         Integer id = updUser.getId();
         log.info("Обновляем данные о пользователе id={} : {}", id, updUser.toString());
-        return service.updateUser(updUser);
+        return userService.updateUser(updUser);
     }
 
     /**
@@ -117,7 +133,7 @@ public class UserController {
     public void addFriends(@PathVariable("userId") Integer userId,
                            @PathVariable("friendId") Integer friendId) {
         log.info("Добавляем в \"друзья\" пользователей id1={}, id2={}", userId, friendId);
-        service.addFriends(userId, friendId);
+        userService.addFriends(userId, friendId);
     }
 
     /**
@@ -132,7 +148,7 @@ public class UserController {
     public void breakUpFriends(@PathVariable("id") Integer id,
                                @PathVariable("friendId") Integer friendId) {
         log.info("Удаляем из \"друзей\" пользователей id1={}, id2={}", id, friendId);
-        service.breakUpFriends(id, friendId);
+        userService.breakUpFriends(id, friendId);
     }
 
     /**
@@ -144,7 +160,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public String deleteAllUsers() {
         log.info("Удаляем всех пользователей.");
-        return service.removeAllUsers();
+        return userService.removeAllUsers();
     }
 
 }

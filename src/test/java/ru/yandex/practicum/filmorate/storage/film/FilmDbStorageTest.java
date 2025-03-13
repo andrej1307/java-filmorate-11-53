@@ -129,7 +129,7 @@ class FilmDbStorageTest {
         filmDbStorage.addNewLike(4, 2);
         filmDbStorage.addNewLike(4, 3);
 
-        Collection<Film> films = filmDbStorage.findPopularFilms(2);
+        Collection<Film> films = filmDbStorage.findPopularFilms();
         List<Film> popular = new LinkedList<>(films);
         assertEquals(popular.get(0), filmDbStorage.getFilmById(3).get(),
                 "Самый популярный фильм расчитан неверно.");
