@@ -6,8 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.PopularService;
+import ru.yandex.practicum.filmorate.service.SearchService;
 import ru.yandex.practicum.filmorate.validator.Marker;
 
 import java.util.Collection;
@@ -22,10 +25,14 @@ import java.util.Map;
 public class FilmController {
 
     private final FilmService service;
+    private final PopularService popularService;
+    private final SearchService searchService;
 
     @Autowired
-    public FilmController(FilmService service) {
+    public FilmController(FilmService service, PopularService popularService, SearchService searchService) {
         this.service = service;
+        this.searchService = searchService;
+        this.popularService = popularService;
     }
 
     /**
@@ -52,10 +59,28 @@ public class FilmController {
         return service.getFilmById(id);
     }
 
+    /**
+     * Получает список самых популярных фильмов за определенный год, жанр и лимит.
+     *
+     * @param year    год, за который нужно получить список самых популярных фильмов
+     * @param genreId идентификатор жанра, по которому нужно получить список самых популярных фильмов
+     * @param count   лимит количества фильмов, которые нужно получить
+     * @return коллекция самых популярных фильмов
+     */
     @GetMapping("/popular")
-    public Collection<Film> findPopularFilms(@RequestParam(defaultValue = "10") @Min(1) int count) {
-        log.info("Ищем популярные {} фильмов.", count);
-        return service.findPopularFilms(count);
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> getReviews(@RequestParam(required = false) Integer year,
+                                       @RequestParam(required = false) Integer genreId,
+                                       @RequestParam(required = false) Integer count) {
+        log.info("Получаем список самых популярных фильмов за {} года, жанра {} и лимитом{}", year, genreId, count);
+        return popularService.getPopular(year, genreId, count);
+    }
+
+    @GetMapping("/common")
+    public Collection<Film> findCommonFilms(@RequestParam @Min(1) int userId,
+                                            @RequestParam @Min(1) int friendId) {
+        log.info("Ищем общие фильмы ползователя id={} и пользователя id={}.", userId, friendId);
+        return service.findCommonFilms(userId, friendId);
     }
 
     /**
@@ -117,4 +142,26 @@ public class FilmController {
         return service.onDelete();
     }
 
+    /**
+     * Метод поиска фильмов по названию или режиссеру
+     *
+     * @param query строка поиска
+     * @param by    параметр поиска (title - название фильма, director - режиссер)
+     * @return - список найденных фильмов
+     */
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> search(@RequestParam String query,
+                                   @RequestParam String by) {
+        log.info("Получаем список фильмов по строке поиска [ {} ]", query);
+        if (by.equals("title")) {
+            return searchService.searchFilms(query, true, false);
+        } else if (by.equals("director")) {
+            return searchService.searchFilms(query, false, true);
+        } else if (by.equals("title,director") || by.equals("director,title")) {
+            return searchService.searchFilms(query, true, true);
+        } else {
+            throw new ValidationException("Неправильные указание параметров поиска 'by' ");
+        }
+    }
 }
