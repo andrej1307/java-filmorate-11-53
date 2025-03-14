@@ -21,8 +21,11 @@ import java.util.Collection;
  */
 public class DirectorController {
 
-    @Autowired
-    private DirectorService directorService;
+    private final DirectorService directorService;
+
+    public DirectorController(@Autowired DirectorService directorService) {
+        this.directorService = directorService;
+    }
 
     @GetMapping("/directors")
     @ResponseStatus(HttpStatus.OK)

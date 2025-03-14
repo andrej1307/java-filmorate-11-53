@@ -299,6 +299,14 @@ public class FilmDbStorage implements FilmStorage {
      */
     @Override
     public void removeAllFilms() {
+        jdbc.update("DELETE FROM likes", new MapSqlParameterSource());
+        jdbc.update("DELETE FROM feedbacks", new MapSqlParameterSource());
+        jdbc.update("DELETE FROM reviews", new MapSqlParameterSource());
+        jdbc.update("DELETE FROM films_genres", new MapSqlParameterSource());
+        jdbc.update("DELETE FROM films_directors", new MapSqlParameterSource());
+        jdbc.update("DELETE FROM films", new MapSqlParameterSource());
+
+        /*
         jdbc.update(SQL_DELETE_ALL_FROM_TABLE, new MapSqlParameterSource()
                 .addValue("table", "likes"));
         jdbc.update(SQL_DELETE_ALL_FROM_TABLE, new MapSqlParameterSource()
@@ -311,6 +319,7 @@ public class FilmDbStorage implements FilmStorage {
                 .addValue("table", "films_directors"));
         jdbc.update(SQL_DELETE_ALL_FROM_TABLE, new MapSqlParameterSource()
                 .addValue("table", "films"));
+        */
     }
 
     /**

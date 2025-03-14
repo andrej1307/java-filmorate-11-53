@@ -1,3 +1,11 @@
+DROP TABLE IF EXISTS film_genres;
+DROP TABLE IF EXISTS friends;
+DROP TABLE IF EXISTS likes;
+DROP TABLE IF EXISTS genres;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS films;
+DROP TABLE IF EXISTS mpa;
+
 -- Создаем таблицу пользователей
 CREATE TABLE IF NOT EXISTS users (
                                      id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -99,4 +107,3 @@ CREATE TABLE IF NOT EXISTS feed (
                                      event_id INTEGER PRIMARY KEY AUTO_INCREMENT,
                                      entity_id INTEGER NOT NULL
 );
-

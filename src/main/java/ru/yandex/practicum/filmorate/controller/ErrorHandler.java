@@ -4,7 +4,6 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,8 +13,6 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.ErrorMessage;
-import ru.yandex.practicum.filmorate.validator.ValidationErrorResponse;
-import ru.yandex.practicum.filmorate.validator.Violation;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,18 +32,18 @@ public class ErrorHandler {
      */
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ValidationErrorResponse onConstraintValidationException(ConstraintViolationException e) {
-        final List<Violation> violations = e.getConstraintViolations().stream()
+    public List<ErrorMessage> onConstraintValidationException(ConstraintViolationException e) {
+        final List<ErrorMessage> violations = e.getConstraintViolations().stream()
                 .map(
-                        violation -> new Violation(
-                                violation.getPropertyPath().toString(),
-                                violation.getMessage()
+                        violation -> new ErrorMessage(
+                                "[" + violation.getPropertyPath().toString() + "] " +
+                                        violation.getMessage()
                         )
                 )
                 .collect(Collectors.toList());
 
         log.info("400 {}.", e.getMessage());
-        return new ValidationErrorResponse(violations);
+        return violations;
     }
 
     /**
@@ -57,14 +54,16 @@ public class ErrorHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ValidationErrorResponse onMethodArgumentNotValidException(
+    public List<ErrorMessage> onMethodArgumentNotValidException(
             MethodArgumentNotValidException e
     ) {
-        final List<Violation> violations = e.getBindingResult().getFieldErrors().stream()
-                .map(error -> new Violation(error.getField(), error.getDefaultMessage()))
+        final List<ErrorMessage> violations = e.getBindingResult().getFieldErrors().stream()
+                .map(
+                        error -> new ErrorMessage("[" + error.getField() + "] "
+                                + error.getDefaultMessage()))
                 .collect(Collectors.toList());
         log.info("400 {}.", e.getMessage());
-        return new ValidationErrorResponse(violations);
+        return violations;
     }
 
     /**
@@ -102,14 +101,14 @@ public class ErrorHandler {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorMessage> onHttpMessageNotReadableException(
+    public ErrorMessage onHttpMessageNotReadableException(
             HttpMessageNotReadableException e) {
         log.info("400 {}.", e.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorMessage("В запросе отсутствуют необходимые данные."));
+        return new ErrorMessage("В запросе отсутствуют необходимые данные." + e.getMessage());
+        //        ResponseEntity
+        //        .status(HttpStatus.BAD_REQUEST)
+        //        .body(new ErrorMessage("В запросе отсутствуют необходимые данные."));
     }
-
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
