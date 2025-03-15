@@ -37,6 +37,8 @@ public class Film {
             groups = {Marker.OnBasic.class, Marker.OnUpdate.class})
     private int duration;
 
+    private float marks;
+
     // рейтинг Ассоциации кинокомпаний
     @NotNull(groups = {Marker.OnBasic.class}, message = "рейтинг MPA должен быть определен")
     private Mpa mpa;

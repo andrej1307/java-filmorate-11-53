@@ -1,10 +1,10 @@
-DROP TABLE IF EXISTS film_genres;
-DROP TABLE IF EXISTS friends;
-DROP TABLE IF EXISTS likes;
-DROP TABLE IF EXISTS genres;
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS films;
-DROP TABLE IF EXISTS mpa;
+--DROP TABLE IF EXISTS film_genres;
+--DROP TABLE IF EXISTS friends;
+--DROP TABLE IF EXISTS likes;
+--DROP TABLE IF EXISTS genres;
+--DROP TABLE IF EXISTS users;
+--DROP TABLE IF EXISTS films;
+--DROP TABLE IF EXISTS mpa;
 
 -- Создаем таблицу пользователей
 CREATE TABLE IF NOT EXISTS users (
@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS films (
                                      description VARCHAR(200),
                                      releaseDate DATE,
                                      len_min INTEGER,
+                                     len_min INTEGER,
                                      MPA_id INTEGER NOT NULL REFERENCES MPA(id)
 );
 
@@ -62,6 +63,19 @@ CREATE TABLE IF NOT EXISTS likes (
                                      PRIMARY KEY (user_id, film_id)
 );
 
+-- Создаем таблицу "оценок" к фильмам
+CREATE TABLE IF NOT EXISTS marks (
+                                     user_id INTEGER NOT NULL REFERENCES users(id),
+                                     film_id INTEGER NOT NULL REFERENCES films(id),
+                                     mark INTEGER,
+                                     PRIMARY KEY (user_id, film_id)
+);
+
+-- Создаем таблицу фильмов для расчета оценок
+CREATE TABLE IF NOT EXISTS film_marks_calculate (
+                                     film_id INTEGER NOT NULL REFERENCES films(id),
+                                     PRIMARY KEY (film_id)
+);
 
 
 -- Создаем справочник режисёров фильма
