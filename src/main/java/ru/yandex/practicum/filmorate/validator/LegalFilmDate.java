@@ -11,7 +11,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = LegalFilmDateValidator.class)
 public @interface LegalFilmDate {
-    String message() default "Дата выпуска фильма не должна быть ранее {value} и позднее текущей.";
+    String message() default "Дата выпуска фильма не должна быть ранее {value}.";
 
     Class<?>[] groups() default {};
 
